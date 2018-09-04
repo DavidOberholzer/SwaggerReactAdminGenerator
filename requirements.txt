@@ -1,0 +1,6 @@
+-e git+https://github.com/praekelt/swagger-parser@master#egg=swagger-parser
+
+click==6.7
+inflect==0.2.5
+Jinja2==2.10
+MarkupSafe==1.0
