@@ -77,6 +77,17 @@ ADDITIONAL_FILES = {
     "auth": ["authProvider.js"]
 }
 
+CUSTOM_IMPORTS = {
+    "empty": {
+        "name": "EmptyField",
+        "directory": "../fields/EmptyField"
+    },
+    "permissions": {
+        "name": "PermissionsStore",
+        "directory": "../auth/PermissionsStore"
+    }
+}
+
 
 def render_to_string(filename: str, context: dict):
     """
@@ -104,7 +115,8 @@ def render_to_string(filename: str, context: dict):
 
 class Generator(object):
 
-    def __init__(self, verbose, output_dir, module_name):
+    def __init__(self, verbose: bool, output_dir=DEFAULT_OUTPUT_DIR,
+                 module_name=DEFAULT_MODULE, permissions=False):
         self.parser = None
         self._resources = None
         self.verbose = verbose
@@ -112,6 +124,7 @@ class Generator(object):
         self.module_name = module_name
         self._currentIO = None
         self.page_details = None
+        self.permissions = permissions
 
     def load_specification(self, specification_path: str, spec_format: str):
         """
@@ -182,10 +195,10 @@ class Generator(object):
                 )
         return None
 
-    @staticmethod
-    def _build_related_field(name: str, _field: dict, _property: dict):
+    def _build_related_field(self, resource: str, name: str, _field: dict, _property: dict):
         """
         Build out a related field
+        :param resource: The name of the current resource.
         :param name: The name of the current field.
         :param _field: The field to be built out further as a related field.
         :param _property: The current property being looked at.
@@ -193,6 +206,16 @@ class Generator(object):
         """
         related = False
         if "x-related-info" in _property:
+
+            # Check and add permission imports if found
+            has_permissions = self._resources[resource]["has_permission_fields"]
+            if self.permissions and not has_permissions:
+                self._resources[resource]["has_permission_fields"] = True
+                self._resources[resource]["custom_imports"].update(
+                    [CUSTOM_IMPORTS["empty"], CUSTOM_IMPORTS["permissions"]]
+                )
+
+            # Check and handle related info
             related_info = _property["x-related-info"]
             model = related_info.get("model", False)
             if model:
@@ -276,6 +299,7 @@ class Generator(object):
 
             elif _field["type"] in mapping:
                 related, _field = self._build_related_field(
+                    resource=resource,
                     name=name,
                     _field=_field,
                     _property=_property
@@ -308,6 +332,7 @@ class Generator(object):
         """
         _input = method in ["create", "update"]
         properties = self._current_definition.get("properties", {})
+        permissions = self._currentIO.get("x-aor-permissions", [])
 
         if properties:
             _fields, _imports = self._build_fields(
@@ -318,7 +343,8 @@ class Generator(object):
             )
             self._resources[resource]["methods"][method] = {
                 "fields": list(_fields),
-                "imports": list(_imports)
+                "imports": list(_imports),
+                "permissions": permissions
             }
 
     def _build_filters(self, resource: str):
@@ -418,6 +444,7 @@ class Generator(object):
             _def = self.parser.specification["definitions"][in_line["model"]]
             properties = _def.get("properties", {})
             many_field["fields"] = self._build_fields(
+                resource=resource,
                 properties=properties,
                 _input=False,
                 fields=fields
@@ -453,6 +480,7 @@ class Generator(object):
                 singular, op = operation_id.rsplit("_", 1)
                 plural = path[1:].split("/")[0]
                 details = VALID_OPERATIONS.get(op, None)
+
                 if details:
                     if plural not in self._resources:
                         self._resources[plural] = {
@@ -460,7 +488,9 @@ class Generator(object):
                             "singular": singular,
                             "imports": set([]),
                             "methods": {},
-                            "filter_lengths": {}
+                            "filter_lengths": {},
+                            "has_permission_fields": False,
+                            "custom_imports": set([])
                         }
                     self._current_definition = exec(details["def"])
                     self._resources["imports"].update(details["imports"])
@@ -471,7 +501,13 @@ class Generator(object):
                             resource=plural
                         )
                     elif op == "delete":
-                        self._resources[plural]["methods"][op] = {}
+                        if self.permissions:
+                            permissions = io.get("x-aor-permissions", [])
+                        else:
+                            permissions = None
+                        self._resources[plural]["methods"][op] = {
+                            "permissions": permissions
+                        }
 
                     # Build out the current resource if a definition is found.
                     if self._current_definition:
