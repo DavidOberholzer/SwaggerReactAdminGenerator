@@ -111,6 +111,7 @@ class Generator(object):
         self.output_dir = output_dir
         self.module_name = module_name
         self._currentIO = None
+        self.page_details = None
 
     def load_specification(self, specification_path: str, spec_format: str):
         """
@@ -223,74 +224,98 @@ class Generator(object):
 
         return related, _field
 
+    def _build_fields(self, resource: str, properties: dict, _input: bool, fields: list):
+        """
+        Build out fields for the given properties.
+        :param resource: The current resource name.
+        :param properties: The properties to build the fields from.
+        :param _input: Boolean signifying if input fields or not.
+        :param fields: List of fields desired. If NONE all are allowed.
+        :return: A tuple of fields and imports
+        """
+        _imports = set([])
+        _fields = set([])
+        required_properties = self._current_definition.get("required", [])
+        sortable = self.page_details[resource].get("sortable", [])
+        for name, details in properties.items():
+
+            # Check if in list of accepted fields
+            if fields:
+                if name not in fields:
+                    continue
+
+            # Handle possible reference definition.
+            _property = self._get_definition_from_ref(details)
+
+            # Not handling nested object definitions, yet, maybe.
+            if "properties" in _property:
+                continue
+            read_only = _property.get("readOnly", False) and _input
+            _type = _property.get("type", None)
+            _field = {
+                "source": name,
+                "type": _type,
+                "required": name in required_properties,
+                "sortable": name in sortable,
+                "read_only": read_only
+            }
+
+            if read_only:
+                _imports.add("DisabledInput")
+
+            if _input:
+                mapping = INPUT_COMPONENT_MAPPING
+            else:
+                mapping = FIELD_COMPONENT_MAPPING
+
+            # Check for enum possibility.
+            if "enum" in _property:
+                _field["component"] = mapping["enum"]
+                if _input:
+                    _field["choices"] = _property["enum"]
+
+            elif _field["type"] in mapping:
+                related, _field = self._build_related_field(
+                    name=name,
+                    _field=_field,
+                    _property=_property
+                )
+
+                if not related:
+                    # Check if format overrides the component.
+                    _format = _property.get("format", None)
+                    if _format in mapping:
+                        _type = _format
+                    _field["component"] = mapping[_type]
+                else:
+                    # Get relation component and the related component
+                    _field["component"] = mapping["relation"]
+                    relation = "SelectInput" if _input else mapping[_type]
+                    _field["related_component"] = relation
+                    _imports.add(relation)
+
+            # Add component to imports
+            if "component" in _field:
+                _imports.add(_field["component"])
+
+        return _fields, _imports
+
     def _build_resource(self, resource: str, method: str):
         """
         Build out a resource.
         :param resource: The name of the resource.
         :param method: The method to build out.
         """
-        _imports = set([])
-        _fields = set([])
         _input = method in ["create", "update"]
         properties = self._current_definition.get("properties", {})
-        required_properties = self._current_definition.get("required", [])
 
         if properties:
-            for name, details in properties.items():
-
-                # Handle possible reference definition.
-                _property = self._get_definition_from_ref(details)
-
-                # Not handling nested object definitions, yet, maybe.
-                if "properties" in _property:
-                    continue
-                read_only = _property.get("readOnly", False) and _input
-                _type = _property.get("type", None)
-                _field = {
-                    "source": name,
-                    "type": _type,
-                    "required": name in required_properties,
-                    "read_only": read_only
-                }
-
-                if read_only:
-                    _imports.add("DisabledInput")
-
-                if _input:
-                    mapping = INPUT_COMPONENT_MAPPING
-                else:
-                    mapping = FIELD_COMPONENT_MAPPING
-
-                # Check for enum possibility.
-                if "enum" in _property:
-                    _field["component"] = mapping["enum"]
-                    if _input:
-                        _field["choices"] = _property["enum"]
-
-                elif _field["type"] in mapping:
-                    related, _field = self._build_related_field(
-                        name=name,
-                        _field=_field,
-                        _property=_property
-                    )
-
-                    if not related:
-                        # Check if format overrides the component.
-                        _format = _property.get("format", None)
-                        if _format in mapping:
-                            _type = _format
-                        _field["component"] = mapping[_type]
-                    else:
-                        # Get relation component and the related component
-                        _field["component"] = mapping["relation"]
-                        relation = "SelectInput" if _input else mapping[_type]
-                        _field["related_component"] = relation
-                        _imports.add(relation)
-
-                # Add component to imports
-                if "component" in _field:
-                    _imports.add(_field["component"])
-
+            _fields, _imports = self._build_fields(
+                resource=resource,
+                properties=properties,
+                _input=_input,
+                fields=[]
+            )
             self._resources[resource]["methods"][method] = {
                 "fields": list(_fields),
                 "imports": list(_imports)
@@ -360,11 +385,54 @@ class Generator(object):
             "imports": list(filter_imports)
         }
 
+    def _build_in_lines(self, resource: str, method: str):
+        """
+        Build out the given resource in lines for a resource.
+        :param resource: The name of the current resource.
+        :param method: The current opertation method.
+        """
+        in_lines = set([])
+        _input = method in ["create", "update"]
+        if _input:
+            mapping = INPUT_COMPONENT_MAPPING
+        else:
+            mapping = FIELD_COMPONENT_MAPPING
+
+        for in_line in self.page_details[resource].get("inlines", []):
+            model = in_line["model"]
+            label = in_line.get("label", None)
+
+            # If a custom base path has been given, use that as reference.
+            ref = in_line.get("rest_resource_name", None)
+            reference = ref or words.plural(model.replace("_", ""))
+
+            fields = in_line.get("fields", None)
+            many_field = {
+                "label": label or model.replace("_", " ").title(),
+                "reference": reference,
+                "target": in_line["key"],
+                "component": mapping["many"]
+            }
+
+            self._resources[resource]["imports"].add(many_field["component"])
+            _def = self.parser.specification["definitions"][in_line["model"]]
+            properties = _def.get("properties", {})
+            many_field["fields"] = self._build_fields(
+                properties=properties,
+                _input=False,
+                fields=fields
+            )
+            in_lines.add(many_field)
+
+        self._resources[resource]["methods"][method]["inlines"] = list(in_lines)
+
     def _init_class_resources(self):
         """
         Initialize the class resources object.
         """
         self._resources = {}
+        self.page_details = self.parser.specification.get(
+            "x-detail-page-definitions", {})
 
         for path, verbs in self.parser.specification["paths"].items():
             for verb, io in verbs.items():
@@ -397,6 +465,7 @@ class Generator(object):
                     self._current_definition = exec(details["def"])
                     self._resources["imports"].update(details["imports"])
 
+                    # Special additions for certain operation types.
                     if op == "list":
                         self._build_filters(
                             resource=plural
@@ -404,11 +473,24 @@ class Generator(object):
                     elif op == "delete":
                         self._resources[plural]["methods"][op] = {}
 
+                    # Build out the current resource if a definition is found.
                     if self._current_definition:
                         self._build_resource(
                             resource=plural,
                             method=op
                         )
+
+                        # Build in lines if existing page definition.
+                        in_lines = all([
+                            op in ["create", "read"],
+                            plural in self.page_details
+                        ])
+
+                        if in_lines:
+                            self._build_in_lines(
+                                resource=plural,
+                                method=op
+                            )
 
     @staticmethod
     def generate_js_file(filename: str, context: dict):
