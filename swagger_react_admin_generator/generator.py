@@ -651,9 +651,17 @@ class Generator(object):
 @click.option("--module-name", type=str, default=DEFAULT_MODULE,
               help="The name of the module where the generated code will be "
                    "used, e.g. myproject.some_application")
-def main(specification_path: str, spec_format: str, verbose: bool, output_dir: str, module_name: str):
+@click.option("--permissions/--no-permissions", default=False)
+def main(specification_path: str, spec_format: str,
+         verbose: bool, output_dir: str,
+         module_name: str, permissions: bool):
+
+    # Initialise Generator
     generator = Generator(
-        verbose=verbose
+        verbose=verbose,
+        output_dir=output_dir,
+        module_name=module_name,
+        permissions=permissions
     )
 
     try:
