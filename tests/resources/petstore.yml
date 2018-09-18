@@ -513,3 +513,10 @@ x-detail-page-definitions:
   pet:
     sortable_fields:
     - id
+    responsive_fields:
+      primary: name
+      secondary: date_of_birth
+  user:
+    responsive_fields:
+      primary: username
+      secondary: email

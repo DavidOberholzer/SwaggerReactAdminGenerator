@@ -5,3 +5,6 @@ venv/
 # IDE files/folders
 .idea
 .vscode
+
+# demo
+demo/

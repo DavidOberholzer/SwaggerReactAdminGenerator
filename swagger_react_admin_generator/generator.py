@@ -349,7 +349,7 @@ class Generator(object):
         """
         _input = method in ["create", "update"]
         properties = self._current_definition.get("properties", {})
-        permissions = self._currentIO.get("x-aor-permissions", [])
+        permissions = self._currentIO.get("x-permissions", [])
 
         if properties:
             _fields, _imports = self._build_fields(
@@ -358,10 +358,13 @@ class Generator(object):
                 _input=_input,
                 fields=[]
             )
+            page_details = self.page_details.get(resource, {})
+            responsive_fields = page_details.get("responsive_fields", None)
             self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]] = {
                 "fields": _fields,
                 "imports": list(_imports),
-                "permissions": permissions
+                "permissions": permissions,
+                "responsive": responsive_fields if method == "list" else None
             }
 
     def _build_filters(self, resource: str):
