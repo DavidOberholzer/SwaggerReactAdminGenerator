@@ -7,10 +7,6 @@ import {
     {% for _import in resource.imports %}
     {{ _import }},
     {% endfor %}
-    {% if resource.edit %}
-    EditButton,
-    {% endif %}
-    ShowButton
 } from 'admin-on-rest';
 {% for _import in resource.custom_imports %}
 import {{ _import.name }} from '{{ _import.directory }}';
@@ -74,24 +70,65 @@ export const {{ resource.title }}{{ component|title }} = props => (
         <Responsive
             small={
                 <SimpleList
-                    {% for prop, details in entries.responsive.items() %}
+                    {% for prop, details in entries.responsive_fields.items() %}
                     {{ prop }}Text={record => `{{ details.title }}: ${ record.{{ details.field }} }`}
                     {% endfor %}
                 />
             }
             medium={
         {% endif %}
-        <{% if component == "list" %}Datagrid bodyOptions={ { showRowHover: true } }{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ name }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
+        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ name }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
             {% for attribute in entries.fields %}
+            {% if attribute.read_only and component == "create" %}{% else %}
             {% if attribute.related_component %}
-            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% else %}perPage={0} {% endif %}allowEmpty>
+            {% if permissions %}
+            {% if "Field" in attribute.component %}
+            {PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list') ? (
+                <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
+                    <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
+                </{{ attribute.component }}>
+            ) : (
+                <EmptyField />
+            )}
+            {% else %}
+            {PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list') && (
+                <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
+                    <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
+                </{{ attribute.component }}>
+            )}
+            {% endif %}
+            {% else %}
+            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
                 <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
             </{{ attribute.component }}>
+            {% endif %}
             {% else %}
             <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}"{% if attribute.choices %} choices={choice{{ component|title }}{{ attribute.source|title }}}{% endif %}{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
             {% endif %}
+            {% endif %}
             {% endfor %}
             {% for inline in entries.inlines %}
+            {% if permissions %}
+            {PermissionsStore.getResourcePermission('{{ inline.reference }}', 'list') ? (
+                <{{ inline.component }} label="{{ inline.label }}" reference="{{ inline.reference }}" target="{{ inline.target }}">
+                    <Datagrid bodyOptions={ { showRowHover: true } }>
+                        {% for attribute in inline.fields %}
+                        {% if attribute.related_component %}
+                        {PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list') ? (
+                            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
+                                <{{ attribute.related_component }} source="{{ attribute.option_text }}" />
+                            </{{ attribute.component }}>
+                        ) : (
+                            <EmptyField />
+                        )}
+                        {% else %}
+                        <{{ attribute.component }} source="{{ attribute.source }}"{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
+                        {% endif %}
+                        {% endfor %}
+                    </Datagrid>
+                </{{ inline.component }}>
+            ) : {% if component == "show" %}(<EmptyField />){% else %}null{% endif %}}
+            {% else %}
             <{{ inline.component }} label="{{ inline.label }}" reference="{{ inline.reference }}" target="{{ inline.target }}">
                 <Datagrid bodyOptions={ { showRowHover: true } }>
                     {% for attribute in inline.fields %}
@@ -105,8 +142,9 @@ export const {{ resource.title }}{{ component|title }} = props => (
                     {% endfor %}
                 </Datagrid>
             </{{ inline.component }}>
+            {% endif %}
             {% endfor %}
-        </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>{% if entries.responsive_fields %}}{% endif %}
+        </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>{% if entries.responsive_fields %}} />{% endif %}
     </{{ component|title }}>
 );
 

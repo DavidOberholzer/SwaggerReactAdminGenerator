@@ -341,10 +341,11 @@ class Generator(object):
 
         return _fields, _imports
 
-    def _build_resource(self, resource: str, method: str):
+    def _build_resource(self, resource: str, singular: str, method: str):
         """
         Build out a resource.
         :param resource: The name of the resource.
+        :param singular: The singular name of the resource.
         :param method: The method to build out.
         """
         _input = method in ["create", "update"]
@@ -352,19 +353,28 @@ class Generator(object):
         permissions = self._currentIO.get("x-permissions", [])
 
         if properties:
+            # Build out fields for a resource.
             _fields, _imports = self._build_fields(
                 resource=resource,
                 properties=properties,
                 _input=_input,
                 fields=[]
             )
-            page_details = self.page_details.get(resource, {})
-            responsive_fields = page_details.get("responsive_fields", None)
+            # Get responsive fields for a resource.
+            page_details = self.page_details.get(singular, {})
+            responsive_fields = page_details.get("responsive_fields", {})
+            responsive_obj = {}
+
+            for prop, field in responsive_fields.items():
+                responsive_obj[prop] = {
+                    "field": field,
+                    "title": field.replace("_", " ").title()
+                }
             self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]] = {
                 "fields": _fields,
                 "imports": list(_imports),
                 "permissions": permissions,
-                "responsive": responsive_fields if method == "list" else None
+                "responsive_fields": responsive_obj if method == "list" else None
             }
 
     def _build_filters(self, resource: str):
@@ -372,7 +382,7 @@ class Generator(object):
         Build out filters for a resource.
         :param resource: The current resource to build filters for.
         """
-        filters = set([])
+        filters = []
         filter_imports = set([])
         for parameter in self._currentIO.get("parameters", []):
             param = self._get_parameter_from_ref(parameter)
@@ -380,7 +390,7 @@ class Generator(object):
             valid = all([
                 param["in"] == "query",
                 param["type"] in INPUT_COMPONENT_MAPPING,
-                "x-exclude" in param
+                "x-exclude" not in param
             ])
 
             if valid:
@@ -417,7 +427,7 @@ class Generator(object):
                 array_validation = param["items"]["type"] \
                     if _type == "array" else None
 
-                filters.add({
+                filters.append({
                     "source": source,
                     "label": label,
                     "title": label.replace(" ", ""),
@@ -543,12 +553,13 @@ class Generator(object):
                     if self._current_definition:
                         self._build_resource(
                             resource=plural,
+                            singular=singular,
                             method=op
                         )
 
                         # Build in lines if existing page definition.
                         in_lines = all([
-                            op in ["create", "read"],
+                            op in ["edit", "read"],
                             singular in self.page_details
                         ])
 
@@ -640,33 +651,24 @@ class Generator(object):
                     },
                     source="Resource"
                 )
-        # click.secho("Generating Filter files for resources...", fg="blue")
-        # filter_dir = self.output_dir + "/filters"
-        # if not os.path.exists(filter_dir):
-        #     os.makedirs(filter_dir)
-        # for name, resource in self._resources.items():
-        #     if resource.get("filters", None) is not None:
-        #         title = resource.get("title", None)
-        #         if title:
-        #             filter_file = "{}Filter.js".format(title)
-        #             self.create_and_generate_file(
-        #                 _dir=filter_dir,
-        #                 filename=filter_file,
-        #                 context={
-        #                     "title": title,
-        #                     "filters": resource["filters"]
-        #                 },
-        #                 source="Filters"
-        #             )
-        # click.secho("Adding basic rest client file...", fg="cyan")
-        # self.create_and_generate_file(
-        #     _dir=self.output_dir,
-        #     filename="restClient",
-        #     context={
-        #         "resources": self._resources
-        #     }
-        # )
-        # Generate additional Files
+        click.secho("Generating Filter files for resources...", fg="blue")
+        filter_dir = self.output_dir + "/filters"
+        if not os.path.exists(filter_dir):
+            os.makedirs(filter_dir)
+        for name, resource in self._resources.items():
+            if resource.get("filters", None) is not None:
+                title = resource.get("title", None)
+                if title:
+                    filter_file = "{}Filter.js".format(title)
+                    self.create_and_generate_file(
+                        _dir=filter_dir,
+                        filename=filter_file,
+                        context={
+                            "title": title,
+                            "filters": resource["filters"]
+                        },
+                        source="Filters"
+                    )
         for _dir, files in ADDITIONAL_FILES.items():
             if _dir != "root":
                 path_dir = "{}/{}".format(self.output_dir, _dir)

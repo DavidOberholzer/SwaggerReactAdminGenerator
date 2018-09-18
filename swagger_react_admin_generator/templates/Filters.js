@@ -39,7 +39,7 @@ const {{ title }}Filter = props => (
             <{{ filter.relation.component }}{% if filter.relation.text %} optionText="{{ filter.relation.text }}"{% endif %} />
         </{{ filter.component }}>
         {% else %}
-        <{{ filter.component }} label="{{ filter.label }}" source="{{ filter.source }}"{% if filter.array %} parse={parse{{ filter.title }}}{% if filter.array == "integer" %} validate={validate{{ filter.title }}()}{% endif %}{% endif %}{% if filter.props %}{% for name, value in filter.props.items() %} {{ name }}{% if value %}={{ value }}{% endif %}{% endfor %}{% endif %} />
+        <{{ filter.component }} label="{{ filter.label }}" source="{{ filter.source }}"{% if filter.array %} parse={parse{{ filter.title }}}{% if filter.array == "integer" %} validate={validate{{ filter.title }}}{% endif %}{% endif %}{% if filter.props %}{% for name, value in filter.props.items() %} {{ name }}{% if value %}={{ value }}{% endif %}{% endfor %}{% endif %} />
         {% endif %}
         {% endfor %}
     </Filter>
