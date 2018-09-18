@@ -9,11 +9,9 @@ import ListIcon from 'material-ui/svg-icons/action/view-list';
 import { titleCase } from './utils';
 
 const ICONS = {
-    {% for name, details in resources.items() %}
-    {% if details.methods %}
-    {{ name }}: <ListIcon />,
-    {% endif %}
-    {% endfor %}
+    pets: <ListIcon />,
+    users: <ListIcon />,
+    categories: <ListIcon />,
 }
 
 const Menu = ({ resources, onMenuClick, logout }) => (

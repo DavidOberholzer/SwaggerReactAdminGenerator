@@ -22,27 +22,23 @@ SPEC_CHOICES = [SPEC_JSON, SPEC_YAML]
 VALID_OPERATIONS = {
     "list": {
         "head": "List",
-        "imports": ["List", "Datagrid"],
-        "def": "self._get_definition_from_ref(definition=io['responses']['200']['schema']['items'])"
+        "imports": ["List", "Datagrid"]
     },
     "read": {
         "head": "Show",
-        "imports": ["Show", "SimpleShowLayout"],
-        "def": "self._get_definition_from_ref(definition=io['responses']['200']['schema'])"
+        "imports": ["Show", "SimpleShowLayout"]
     },
     "create": {
         "head": "Create",
-        "imports": ["Create", "SimpleForm"],
-        "def": "self._get_parameter_definition()"
+        "imports": ["Create", "SimpleForm"]
     },
     "update": {
         "head": "Edit",
-        "imports": ["Edit", "SimpleForm"],
-        "def": "self._get_parameter_definition()"
+        "imports": ["Edit", "SimpleForm"]
     },
     "delete": {
         "head": "Delete",
-        "imports": ["Delete"],
+        "imports": [],
         "def": "None"
     }
 }
@@ -55,6 +51,7 @@ INPUT_COMPONENT_MAPPING = {
     "enum": "SelectInput",
     "integer": "NumberInput",
     "many": "ReferenceManyField",
+    "object": "LongTextInput",
     "relation": "ReferenceInput",
     "string": "TextInput"
 }
@@ -67,17 +64,27 @@ FIELD_COMPONENT_MAPPING = {
     "integer": "NumberField",
     "many": "ReferenceManyField",
     "relation": "ReferenceField",
-    "string": "TextField"
+    "string": "TextField",
+    "uri": "UrlField"
 }
 
-SUPPORTED_COMPONENTS = ["list", "show", "create", "edit"]
+SUPPORTED_COMPONENTS = {
+    "list": "list",
+    "read": "show",
+    "create": "create",
+    "update": "edit"
+}
 
 ADDITIONAL_FILES = {
-    "root": ["Theme.js"],
-    "auth": ["authProvider.js"]
+    "root": ["theme.js", "MyLayout.js"],
+    "fields": ["EmptyField.js", "ObjectField.js"]
 }
 
 CUSTOM_IMPORTS = {
+    "object": {
+        "name": "ObjectField",
+        "directory": "../fields/ObjectField"
+    },
     "empty": {
         "name": "EmptyField",
         "directory": "../fields/EmptyField"
@@ -212,7 +219,7 @@ class Generator(object):
             if self.permissions and not has_permissions:
                 self._resources[resource]["has_permission_fields"] = True
                 self._resources[resource]["custom_imports"].update(
-                    [CUSTOM_IMPORTS["empty"], CUSTOM_IMPORTS["permissions"]]
+                    ["empty", "permissions"]
                 )
 
             # Check and handle related info
@@ -257,9 +264,10 @@ class Generator(object):
         :return: A tuple of fields and imports
         """
         _imports = set([])
-        _fields = set([])
+        _fields = []
         required_properties = self._current_definition.get("required", [])
-        sortable = self.page_details[resource].get("sortable", [])
+        page_details = self.page_details.get(resource, None)
+        sortable = page_details.get("sortable", []) if page_details else []
         for name, details in properties.items():
 
             # Check if in list of accepted fields
@@ -297,7 +305,7 @@ class Generator(object):
                 if _input:
                     _field["choices"] = _property["enum"]
 
-            elif _field["type"] in mapping:
+            elif _field["type"] in mapping or _field["type"] in CUSTOM_IMPORTS:
                 related, _field = self._build_related_field(
                     resource=resource,
                     name=name,
@@ -310,7 +318,11 @@ class Generator(object):
                     _format = _property.get("format", None)
                     if _format in mapping:
                         _type = _format
-                    _field["component"] = mapping[_type]
+                    # Check if a custom component exists for this _type
+                    if _type in CUSTOM_IMPORTS and _type not in mapping:
+                        _field["component"] = CUSTOM_IMPORTS[_type]["name"]
+                    else:
+                        _field["component"] = mapping[_type]
                 else:
                     # Get relation component and the related component
                     _field["component"] = mapping["relation"]
@@ -318,9 +330,14 @@ class Generator(object):
                     _field["related_component"] = relation
                     _imports.add(relation)
 
-            # Add component to imports
-            if "component" in _field:
-                _imports.add(_field["component"])
+            if _type in CUSTOM_IMPORTS and _type not in mapping:
+                self._resources[resource]["custom_imports"].add(_type)
+            else:
+                # Add component to imports
+                if "component" in _field:
+                    _imports.add(_field["component"])
+
+            _fields.append(_field)
 
         return _fields, _imports
 
@@ -341,8 +358,8 @@ class Generator(object):
                 _input=_input,
                 fields=[]
             )
-            self._resources[resource]["methods"][method] = {
-                "fields": list(_fields),
+            self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]] = {
+                "fields": _fields,
                 "imports": list(_imports),
                 "permissions": permissions
             }
@@ -411,20 +428,21 @@ class Generator(object):
             "imports": list(filter_imports)
         }
 
-    def _build_in_lines(self, resource: str, method: str):
+    def _build_in_lines(self, resource: str, singular: str, method: str):
         """
         Build out the given resource in lines for a resource.
         :param resource: The name of the current resource.
+        :param singular: The singular name of the current resource.
         :param method: The current opertation method.
         """
-        in_lines = set([])
+        in_lines = []
         _input = method in ["create", "update"]
         if _input:
             mapping = INPUT_COMPONENT_MAPPING
         else:
             mapping = FIELD_COMPONENT_MAPPING
 
-        for in_line in self.page_details[resource].get("inlines", []):
+        for in_line in self.page_details[singular].get("inlines", []):
             model = in_line["model"]
             label = in_line.get("label", None)
 
@@ -443,15 +461,15 @@ class Generator(object):
             self._resources[resource]["imports"].add(many_field["component"])
             _def = self.parser.specification["definitions"][in_line["model"]]
             properties = _def.get("properties", {})
-            many_field["fields"] = self._build_fields(
+            many_field["fields"], imports = self._build_fields(
                 resource=resource,
                 properties=properties,
                 _input=False,
                 fields=fields
             )
-            in_lines.add(many_field)
+            in_lines.append(many_field)
 
-        self._resources[resource]["methods"][method]["inlines"] = list(in_lines)
+        self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]]["inlines"] = in_lines
 
     def _init_class_resources(self):
         """
@@ -492,15 +510,24 @@ class Generator(object):
                             "has_permission_fields": False,
                             "custom_imports": set([])
                         }
-                    self._current_definition = exec(details["def"])
-                    self._resources["imports"].update(details["imports"])
+                    self._resources[plural]["imports"].update(details["imports"])
 
                     # Special additions for certain operation types.
                     if op == "list":
+                        self._current_definition = self._get_definition_from_ref(
+                            definition=io['responses']['200']['schema']['items']
+                        )
                         self._build_filters(
                             resource=plural
                         )
+                    elif op == "read":
+                        self._current_definition = self._get_definition_from_ref(
+                            definition=io['responses']['200']['schema']
+                        )
+                    elif op in ["create", "update"]:
+                        self._current_definition = self._get_parameter_definition()
                     elif op == "delete":
+                        self._current_definition = None
                         if self.permissions:
                             permissions = io.get("x-aor-permissions", [])
                         else:
@@ -519,14 +546,22 @@ class Generator(object):
                         # Build in lines if existing page definition.
                         in_lines = all([
                             op in ["create", "read"],
-                            plural in self.page_details
+                            singular in self.page_details
                         ])
 
                         if in_lines:
                             self._build_in_lines(
                                 resource=plural,
+                                singular=singular,
                                 method=op
                             )
+
+        for resource in self._resources.keys():
+            custom_imports = list(self._resources[resource]["custom_imports"])
+            custom_imports = [
+                CUSTOM_IMPORTS[_import] for _import in custom_imports
+            ]
+            self._resources[resource]["custom_imports"] = custom_imports
 
     @staticmethod
     def generate_js_file(filename: str, context: dict):
@@ -573,7 +608,8 @@ class Generator(object):
             context={
                 "title": self.module_name,
                 "resources": self._resources,
-                "supported_components": SUPPORTED_COMPONENTS
+                "permissions": self.permissions,
+                "supported_components": SUPPORTED_COMPONENTS.values()
             }
         )
         self.create_and_generate_file(
@@ -596,36 +632,37 @@ class Generator(object):
                     context={
                         "name": title,
                         "resource": resource,
-                        "supported_components": SUPPORTED_COMPONENTS
+                        "permissions": self.permissions,
+                        "supported_components": SUPPORTED_COMPONENTS.values()
                     },
                     source="Resource"
                 )
-        click.secho("Generating Filter files for resources...", fg="blue")
-        filter_dir = self.output_dir + "/filters"
-        if not os.path.exists(filter_dir):
-            os.makedirs(filter_dir)
-        for name, resource in self._resources.items():
-            if resource.get("filters", None) is not None:
-                title = resource.get("title", None)
-                if title:
-                    filter_file = "{}Filter.js".format(title)
-                    self.create_and_generate_file(
-                        _dir=filter_dir,
-                        filename=filter_file,
-                        context={
-                            "title": title,
-                            "filters": resource["filters"]
-                        },
-                        source="Filters"
-                    )
-        click.secho("Adding basic rest client file...", fg="cyan")
-        self.create_and_generate_file(
-            _dir=self.output_dir,
-            filename="restClient",
-            context={
-                "resources": self._resources
-            }
-        )
+        # click.secho("Generating Filter files for resources...", fg="blue")
+        # filter_dir = self.output_dir + "/filters"
+        # if not os.path.exists(filter_dir):
+        #     os.makedirs(filter_dir)
+        # for name, resource in self._resources.items():
+        #     if resource.get("filters", None) is not None:
+        #         title = resource.get("title", None)
+        #         if title:
+        #             filter_file = "{}Filter.js".format(title)
+        #             self.create_and_generate_file(
+        #                 _dir=filter_dir,
+        #                 filename=filter_file,
+        #                 context={
+        #                     "title": title,
+        #                     "filters": resource["filters"]
+        #                 },
+        #                 source="Filters"
+        #             )
+        # click.secho("Adding basic rest client file...", fg="cyan")
+        # self.create_and_generate_file(
+        #     _dir=self.output_dir,
+        #     filename="restClient",
+        #     context={
+        #         "resources": self._resources
+        #     }
+        # )
         # Generate additional Files
         for _dir, files in ADDITIONAL_FILES.items():
             if _dir != "root":
@@ -667,7 +704,10 @@ def main(specification_path: str, spec_format: str,
     try:
         click.secho("Loading specification file...", fg="blue")
         generator.load_specification(specification_path, spec_format)
-        click.secho("Done!", fg="green")
+        click.secho("Specification loaded", fg="green")
+        click.secho("Starting admin generation...", fg="blue")
+        generator.admin_generation()
+        click.secho("All Done!", fg="green")
     except Exception as e:
         click.secho(str(e), fg="red")
         click.secho("""
@@ -676,3 +716,7 @@ def main(specification_path: str, spec_format: str,
                 parser used does not like it at all.
                 """)
         raise e
+
+
+if __name__ == '__main__':
+    main()

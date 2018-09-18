@@ -16,7 +16,11 @@ test:
 
 demo:
 	mkdir demo
-	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.json --output-dir=demo --module-name="A Pet Admin"
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin"
+
+demo-permissions:
+	mkdir demo
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions
 
 clean-demo:
 	rm -rf demo

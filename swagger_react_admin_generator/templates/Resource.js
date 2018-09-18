@@ -4,28 +4,26 @@
 **/
 import React from 'react';
 import {
-    {% for import in resource.imports %}
-    {{ import }},
+    {% for _import in resource.imports %}
+    {{ _import }},
     {% endfor %}
-    {% if resource.remove %}
-    DeleteButton,
-    {% endif %}
     {% if resource.edit %}
     EditButton,
     {% endif %}
     ShowButton
 } from 'admin-on-rest';
-{% for import in resource.custom_imports %}
-import {{ import.name }} from '{{ import.directory }}';
+{% for _import in resource.custom_imports %}
+import {{ _import.name }} from '{{ _import.directory }}';
 {% endfor %}
+
 {% if resource.filters %}
 import {{ resource.title }}Filter from '../filters/{{ resource.title }}Filter';
 {% endif %}
 
-{% if resource.create %}
+{% if resource.methods.create %}
 const validationCreate{{ name }} = values => {
     const errors = {};
-    {% for attribute in resource.create.fields %}
+    {% for attribute in resource.methods.create.fields %}
     {% if attribute.required %}
     if (!values.{{ attribute.source }}) {
         errors.{{ attribute.source }} = ["{{ attribute.source }} is required"];
@@ -36,10 +34,10 @@ const validationCreate{{ name }} = values => {
 };
 
 {% endif %}
-{% if resource.edit %}
+{% if resource.methods.edit %}
 const validationEdit{{ name }} = values => {
     const errors = {};
-    {% for attribute in resource.edit.fields %}
+    {% for attribute in resource.methods.edit.fields %}
     {% if attribute.required %}
     if (!values.{{ attribute.source }}) {
         errors.{{ attribute.source }} = ["{{ attribute.source }} is required"];
@@ -50,10 +48,10 @@ const validationEdit{{ name }} = values => {
 };
 
 {% endif %}
-{% for component, entries in resource.items() %}
+{% for method, entries in resource.methods.items() %}
 {% for attribute in entries.fields %}
 {% if attribute.choices %}
-const choice{{ component|title }}{{ attribute.source|title }} = [
+const choice{{ method|title }}{{ attribute.source|title }} = [
     {% if attribute.type == "integer" %}
     {% for choice in attribute.choices %}
     { id: {{ choice }}, name: {{ choice }} },
@@ -68,11 +66,11 @@ const choice{{ component|title }}{{ attribute.source|title }} = [
 {% endif %}
 {% endfor %}
 {% endfor %}
-{% for component, entries in resource.items() %}
+{% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
 export const {{ resource.title }}{{ component|title }} = props => (
     <{{ component|title }} {...props} title="{{ resource.title }} {{ component|title }}"{% if component == "list" and resource.filters %} filters={<{{ resource.title }}Filter />}{% endif %}>
-        <{% if component == "list" %}Datagrid bodyOptions={ { showRowHover: true } }{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ name }}()}{% endif %}>
+        <{% if component == "list" %}Datagrid bodyOptions={ { showRowHover: true } }{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ name }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
             {% for attribute in entries.fields %}
             {% if attribute.related_component %}
             <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% else %}perPage={0} {% endif %}allowEmpty>
@@ -97,17 +95,6 @@ export const {{ resource.title }}{{ component|title }} = props => (
                 </Datagrid>
             </{{ inline.component }}>
             {% endfor %}
-            {% if component == "list" %}
-            {% if resource.edit %}
-            <EditButton />
-            {% endif %}
-            {% if resource.show %}
-            <ShowButton />
-            {% endif %}
-            {% if resource.remove %}
-            <DeleteButton />
-            {% endif %}
-            {% endif %}
         </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>
     </{{ component|title }}>
 );
