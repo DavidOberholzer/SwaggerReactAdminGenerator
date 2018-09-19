@@ -33,6 +33,7 @@ parameters:
     required: false
     type: string
     minLength: 3
+    maxLength: 10
 
   optional_user_id:
     description: An Optional Filter by user_id.
@@ -67,6 +68,8 @@ paths:
   /pets:
     get:
       operationId: pet_list
+      x-permissions:
+      - 'pet:read'
       parameters:
       - $ref: "#/parameters/optional_pet_id"
       - $ref: "#/parameters/optional_pet_name"
@@ -95,6 +98,8 @@ paths:
       consumes:
       - application/json
       operationId: pet_create
+      x-permissions:
+      - 'pet:create'
       parameters:
       - in: body
         name: data
@@ -115,6 +120,8 @@ paths:
     - $ref: "#/parameters/pet_id"
     delete:
       operationId: pet_delete
+      x-permissions:
+      - 'pet:delete'
       responses:
         '204':
           description: ''
@@ -122,6 +129,8 @@ paths:
       - pets_api
     get:
       operationId: pet_read
+      x-permissions:
+      - 'pet:read'
       produces:
       - application/json
       responses:
@@ -135,6 +144,8 @@ paths:
       consumes:
       - application/json
       operationId: pet_update
+      x-permissions:
+      - 'pet:update'
       parameters:
       - in: body
         name: data
@@ -153,6 +164,8 @@ paths:
   /users:
     get:
       operationId: user_list
+      x-permissions:
+      - 'user:read'
       parameters:
       - $ref: "#/parameters/optional_user_id"
       - name: user_ids
@@ -182,6 +195,8 @@ paths:
     - $ref: "#/parameters/user_id"
     get:
       operationId: user_read
+      x-permissions:
+      - 'user:read'
       produces:
       - application/json
       responses:
@@ -195,6 +210,8 @@ paths:
       consumes:
       - application/json
       operationId: user_update
+      x-permissions:
+      - 'pet:update'
       parameters:
       - in: body
         name: data
@@ -213,6 +230,8 @@ paths:
   /categories:
     get:
       operationId: category_list
+      x-permissions:
+      - 'category:read'
       parameters:
       - name: category_ids
         description: An optional list of category ids
@@ -239,6 +258,8 @@ paths:
       consumes:
       - application/json
       operationId: category_create
+      x-permissions:
+      - 'category:create'
       parameters:
       - in: body
         name: data
@@ -259,6 +280,8 @@ paths:
     - $ref: "#/parameters/category_id"
     delete:
       operationId: category_delete
+      x-permissions:
+      - 'category:delete'
       responses:
         '204':
           description: ''
@@ -266,6 +289,8 @@ paths:
       - pets_api
     get:
       operationId: category_read
+      x-permissions:
+      - 'category:read'
       produces:
       - application/json
       responses:

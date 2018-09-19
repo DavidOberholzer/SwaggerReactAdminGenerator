@@ -14,7 +14,7 @@ const ICONS = {
     {{ name }}: <ListIcon />,
     {% endif %}
     {% endfor %}
-}
+};
 
 const Menu = ({ resources, onMenuClick, logout }) => (
     <div>

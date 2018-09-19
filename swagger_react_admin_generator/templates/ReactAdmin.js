@@ -6,8 +6,9 @@ import { Admin, Resource } from 'react-admin';
 
 import authProvider from './auth/authProvider';
 import PermissionsStore from './auth/PermissionsStore';
+import catchAll from './catchAll';
+import dataProvider, { httpClient } from "./dataProvider";
 import MyLayout from './MyLayout';
-import restClient from './restClient';
 import { muiTheme } from './theme';
 
 {% for name, details in resources.items() %}
@@ -27,7 +28,8 @@ const ReactAdmin = () => (
     <Admin
         appLayout={MyLayout}
         authProvider={authProvider}
-        dataProvider={restClient('{{ rest_server_url }}')}
+        catchAll={catchAll}
+        dataProvider={dataProvider('rest_server_url', httpClient)}
         title="{{ title }}"
         theme={muiTheme}
     >

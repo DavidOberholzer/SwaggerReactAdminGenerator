@@ -82,6 +82,10 @@ ADDITIONAL_FILES = {
     "fields": ["EmptyField.js", "ObjectField.js"]
 }
 
+PERMISSION_ADDITIONAL_FILES = {
+    "pages": ["NoPermissions.js"]
+}
+
 CUSTOM_IMPORTS = {
     "object": {
         "name": "ObjectField",
@@ -601,7 +605,7 @@ class Generator(object):
         """
         return render_to_string(filename, {})
 
-    def create_and_generate_file(self, _dir, filename, context, source=None):
+    def create_and_generate_file(self, _dir: str, filename: str, context: dict, source=None):
         """
         Create a file of the given name and context.
         :param _dir: The output directory.
@@ -618,6 +622,22 @@ class Generator(object):
             if self.verbose:
                 print(data)
 
+    def create_additional_files(self, additional_files: dict):
+        for _dir, files in additional_files.items():
+            if _dir != "root":
+                path_dir = f"{self.output_dir}/{_dir}"
+                if not os.path.exists(path_dir):
+                    os.makedirs(path_dir)
+            else:
+                path_dir = self.output_dir
+            for _file in files:
+                click.secho(f"Adding {_file} file...", fg="cyan")
+                with open(os.path.join(path_dir, _file), "w") as f:
+                    data = self.add_additional_file(_file)
+                    f.write(data)
+                    if self.verbose:
+                        print(data)
+
     def admin_generation(self):
         click.secho("Generating main JS component file...", fg="blue")
         self.create_and_generate_file(
@@ -630,11 +650,28 @@ class Generator(object):
                 "supported_components": SUPPORTED_COMPONENTS.values()
             }
         )
+        click.secho("Generating menu...", fg="blue")
         self.create_and_generate_file(
             _dir=self.output_dir,
             filename="Menu",
             context={
                 "resources": self._resources
+            }
+        )
+        click.secho("Generating data provider...", fg="blue")
+        self.create_and_generate_file(
+            _dir=self.output_dir,
+            filename="dataProvider",
+            context={
+                "resources": self._resources
+            }
+        )
+        click.secho("Generating catch all...", fg="blue")
+        self.create_and_generate_file(
+            _dir=self.output_dir,
+            filename="catchAll",
+            context={
+                "permissions": self.permissions
             }
         )
 
@@ -700,20 +737,24 @@ class Generator(object):
                         },
                         source="Filters"
                     )
-        for _dir, files in ADDITIONAL_FILES.items():
-            if _dir != "root":
-                path_dir = f"{self.output_dir}/{_dir}"
-                if not os.path.exists(path_dir):
-                    os.makedirs(path_dir)
-            else:
-                path_dir = self.output_dir
-            for _file in files:
-                click.secho(f"Adding {_file} file...", fg="cyan")
-                with open(os.path.join(path_dir, _file), "w") as f:
-                    data = self.add_additional_file(_file)
-                    f.write(data)
-                    if self.verbose:
-                        print(data)
+
+        if self.permissions:
+            click.secho("Generating Permissions Store...", fg="blue")
+            auth_dir = self.output_dir + "/auth"
+            if not os.path.exists(auth_dir):
+                os.makedirs(auth_dir)
+            self.create_and_generate_file(
+                _dir=auth_dir,
+                filename="PermissionsStore.js",
+                context={
+                    "resources": self._resources,
+                    "supported_components": SUPPORTED_COMPONENTS.values()
+                },
+                source="PermissionsStore"
+            )
+            self.create_additional_files(PERMISSION_ADDITIONAL_FILES)
+
+        self.create_additional_files(ADDITIONAL_FILES)
 
 
 @click.command()
