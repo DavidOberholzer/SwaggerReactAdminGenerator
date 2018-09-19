@@ -176,35 +176,10 @@ paths:
               $ref: "#/definitions/user"
       tags:
       - pets_api
-    post:
-      consumes:
-      - application/json
-      operationId: user_create
-      parameters:
-      - in: body
-        name: data
-        schema:
-          $ref: "#/definitions/user_create"
-      produces:
-      - application/json
-      responses:
-        '201':
-          description: ''
-          schema:
-            $ref: "#/definitions/user"
-      tags:
-      - pets_api
 
   /users/{user_id}:
     parameters:
     - $ref: "#/parameters/user_id"
-    delete:
-      operationId: user_delete
-      responses:
-        '204':
-          description: ''
-      tags:
-      - pets_api
     get:
       operationId: user_read
       produces:
@@ -340,27 +315,6 @@ definitions:
         description: User Status
     xml:
       name: User
-
-  user_create:
-    properties:
-      username:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-      email:
-        type: string
-      password:
-        type: string
-      phone:
-        type: string
-    required:
-    - username
-    - firstName
-    - lastName
-    - email
-    - password
 
   user_update:
     properties:

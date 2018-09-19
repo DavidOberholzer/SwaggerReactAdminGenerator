@@ -7,9 +7,15 @@ import {
     {% for _import in resource.imports %}
     {{ _import }},
     {% endfor %}
-} from 'admin-on-rest';
+} from 'react-admin';
 {% for _import in resource.custom_imports %}
 import {{ _import.name }} from '{{ _import.directory }}';
+{% endfor %}
+
+{% for component in resource.methods.keys() %}
+{% if component in action_components %}
+import {{ resource.title }}{{ component|title }}Actions from '../customActions/{{ resource.title }}{{ component|title }}Actions';
+{% endif %}
 {% endfor %}
 
 {% if resource.filters %}
@@ -65,7 +71,7 @@ const choice{{ method|title }}{{ attribute.source|title }} = [
 {% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
 export const {{ resource.title }}{{ component|title }} = props => (
-    <{{ component|title }} {...props} title="{{ resource.title }} {{ component|title }}"{% if component == "list" and resource.filters %} filters={<{{ resource.title }}Filter />}{% endif %}>
+    <{{ component|title }} {...props} title="{{ resource.title }} {{ component|title }}"{% if component in action_components %} actions={<{{ resource.title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" and resource.filters %} filters={<{{ resource.title }}Filter />}{% endif %}>
         {% if entries.responsive_fields %}
         <Responsive
             small={
@@ -103,7 +109,7 @@ export const {{ resource.title }}{{ component|title }} = props => (
             </{{ attribute.component }}>
             {% endif %}
             {% else %}
-            <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}"{% if attribute.choices %} choices={choice{{ component|title }}{{ attribute.source|title }}}{% endif %}{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
+            <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if attribute.choices %} choices={choice{{ component|title }}{{ attribute.source|title }}}{% endif %}{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
             {% endif %}
             {% endif %}
             {% endfor %}

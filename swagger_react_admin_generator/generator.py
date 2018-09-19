@@ -75,6 +75,8 @@ SUPPORTED_COMPONENTS = {
     "update": "edit"
 }
 
+ACTION_COMPONENTS = ["list", "edit", "show"]
+
 ADDITIONAL_FILES = {
     "root": ["theme.js", "MyLayout.js"],
     "fields": ["EmptyField.js", "ObjectField.js"]
@@ -153,7 +155,7 @@ class Generator(object):
                 raise RuntimeError("Could not infer specification format. Use "
                                    "--spec-format to specify it explicitly.")
 
-        click.secho("Using spec format '{}'".format(spec_format), fg="green")
+        click.secho(f"Using spec format '{spec_format}'", fg="green")
         if spec_format == SPEC_YAML:
             with open(specification_path, "r") as f:
                 self.parser = SwaggerParser(swagger_yaml=f)
@@ -254,10 +256,11 @@ class Generator(object):
 
         return related, _field
 
-    def _build_fields(self, resource: str, properties: dict, _input: bool, fields: list):
+    def _build_fields(self, resource: str, singular: str, properties: dict, _input: bool, fields: list):
         """
         Build out fields for the given properties.
         :param resource: The current resource name.
+        :param singular: The current singular resource name.
         :param properties: The properties to build the fields from.
         :param _input: Boolean signifying if input fields or not.
         :param fields: List of fields desired. If NONE all are allowed.
@@ -266,8 +269,8 @@ class Generator(object):
         _imports = set([])
         _fields = []
         required_properties = self._current_definition.get("required", [])
-        page_details = self.page_details.get(resource, None)
-        sortable = page_details.get("sortable", []) if page_details else []
+        page_details = self.page_details.get(singular, None)
+        sortable = page_details.get("sortable_fields", []) if page_details else []
         for name, details in properties.items():
 
             # Check if in list of accepted fields
@@ -356,6 +359,7 @@ class Generator(object):
             # Build out fields for a resource.
             _fields, _imports = self._build_fields(
                 resource=resource,
+                singular= singular,
                 properties=properties,
                 _input=_input,
                 fields=[]
@@ -476,6 +480,7 @@ class Generator(object):
             properties = _def.get("properties", {})
             many_field["fields"], imports = self._build_fields(
                 resource=resource,
+                singular=singular,
                 properties=properties,
                 _input=False,
                 fields=fields
@@ -545,7 +550,7 @@ class Generator(object):
                             permissions = io.get("x-aor-permissions", [])
                         else:
                             permissions = None
-                        self._resources[plural]["methods"][op] = {
+                        self._resources[plural]["methods"]["remove"] = {
                             "permissions": permissions
                         }
 
@@ -604,11 +609,10 @@ class Generator(object):
         :param context: The context for jinja.
         :param source: Alternative source file for the template.
         """
-        click.secho("Generating {}.js file...".format(filename), fg="green")
-        with open(os.path.join(_dir, "{}.js".format(
-                filename)), "w") as f:
+        click.secho(f"Generating {filename}.js file...", fg="green")
+        with open(os.path.join(_dir, f"{filename}.js"), "w") as f:
             data = self.generate_js_file(
-                filename="{}.js".format(source or filename),
+                filename=f"{source or filename}.js",
                 context=context)
             f.write(data)
             if self.verbose:
@@ -633,6 +637,7 @@ class Generator(object):
                 "resources": self._resources
             }
         )
+
         click.secho("Generating resource component files...", fg="blue")
         resource_dir = self.output_dir + "/resources"
         if not os.path.exists(resource_dir):
@@ -644,6 +649,7 @@ class Generator(object):
                     _dir=resource_dir,
                     filename=title,
                     context={
+                        "action_components": ACTION_COMPONENTS,
                         "name": title,
                         "resource": resource,
                         "permissions": self.permissions,
@@ -651,6 +657,31 @@ class Generator(object):
                     },
                     source="Resource"
                 )
+
+        click.secho("Generating custom action component files...", fg="blue")
+        action_dir = self.output_dir + "/customActions"
+        if not os.path.exists(action_dir):
+            os.makedirs(action_dir)
+        for name, resource in self._resources.items():
+            title = resource.get("title", None)
+            if title:
+                methods = resource["methods"].keys()
+                for method in methods:
+                    if method in ["list", "show", "edit"]:
+                        action_file = f"{title}{method.title()}Actions.js"
+                        self.create_and_generate_file(
+                            _dir=action_dir,
+                            filename=action_file,
+                            context={
+                                "title": title,
+                                "name": name,
+                                "methods": methods,
+                                "resource": resource,
+                                "permissions": self.permissions
+                            },
+                            source=f"{method.title()}Actions"
+                        )
+
         click.secho("Generating Filter files for resources...", fg="blue")
         filter_dir = self.output_dir + "/filters"
         if not os.path.exists(filter_dir):
@@ -659,7 +690,7 @@ class Generator(object):
             if resource.get("filters", None) is not None:
                 title = resource.get("title", None)
                 if title:
-                    filter_file = "{}Filter.js".format(title)
+                    filter_file = f"{title}Filter.js"
                     self.create_and_generate_file(
                         _dir=filter_dir,
                         filename=filter_file,
@@ -671,15 +702,15 @@ class Generator(object):
                     )
         for _dir, files in ADDITIONAL_FILES.items():
             if _dir != "root":
-                path_dir = "{}/{}".format(self.output_dir, _dir)
+                path_dir = f"{self.output_dir}/{_dir}"
                 if not os.path.exists(path_dir):
                     os.makedirs(path_dir)
             else:
                 path_dir = self.output_dir
-            for file in files:
-                click.secho("Adding {} file...".format(file), fg="cyan")
-                with open(os.path.join(path_dir, file), "w") as f:
-                    data = self.add_additional_file(file)
+            for _file in files:
+                click.secho(f"Adding {_file} file...", fg="cyan")
+                with open(os.path.join(path_dir, _file), "w") as f:
+                    data = self.add_additional_file(_file)
                     f.write(data)
                     if self.verbose:
                         print(data)
