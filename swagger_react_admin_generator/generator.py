@@ -236,24 +236,26 @@ class Generator(object):
 
             if related_info:
                 model = related_info.get("model", False)
-                related = True
-                # If model didn't even exist then attempt to guess the model
-                # from the substring before the last "_".
-                if not model:
-                    model = name.rsplit("_", 1)[0]
-                _field["label"] = model.replace("_", " ").title()
-                # If a custom base path has been given set the reference to it
-                # else attempt to get the plural of the given model.
-                if related_info.get("rest_resource_name", None) is not None:
-                    reference = related_info["rest_resource_name"]
-                else:
-                    reference = words.plural(model.replace("_", ""))
-                _field["reference"] = reference
-                # Get the option text to be used in the Select input from the
-                # label field, else guess it from the current property name.
-                guess = name.rsplit("_", 1)[1]
-                label = related_info.get("label", None) or guess
-                _field["option_text"] = label
+                # Check if related model is not set to None.
+                if model is not None:
+                    related = True
+                    # If model didn't even exist then attempt to guess the model
+                    # from the substring before the last "_".
+                    if not model:
+                        model = name.rsplit("_", 1)[0]
+                    _field["label"] = model.replace("_", " ").title()
+                    # If a custom base path has been given set the reference to it
+                    # else attempt to get the plural of the given model.
+                    if related_info.get("rest_resource_name", None) is not None:
+                        reference = related_info["rest_resource_name"]
+                    else:
+                        reference = words.plural(model.replace("_", ""))
+                    _field["reference"] = reference
+                    # Get the option text to be used in the Select input from the
+                    # label field, else guess it from the current property name.
+                    guess = name.rsplit("_", 1)[1]
+                    label = related_info.get("label", None) or guess
+                    _field["option_text"] = label
 
             elif name.endswith("_id"):
                 related = True
