@@ -216,7 +216,7 @@ The following types/formats have supported React Admin components and are shown 
 | object*         | ObjectField*     | LongTextInput*   |
 | array           | TextField        | None             |
 
-* Object types use a Custom ObjectField included in the generation of the Admin on Rest Client. 
+* Object types use a Custom ObjectField included in the generation of the React Admin Client. 
 For the input of an object, a LongTextInput is utilized with `parse` and `format` props that handle the sending and presentation of the field data.
 
 ### Foriegn Key relationships

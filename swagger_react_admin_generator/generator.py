@@ -172,14 +172,17 @@ class Generator(object):
         """
         Get the swagger definition from a swagger reference declaration in the spec.
         :param definition: The definition containing the reference declaration.
-        :return: The definition pointed to by the ref
+        :return: The definition pointed to by the ref and the title
         """
         if "$ref" in definition:
             definition_name = \
                 self.parser.get_definition_name_from_ref(definition["$ref"])
-            return self.parser.specification["definitions"][definition_name]
+
+            title = definition_name.replace("_", " ").title().replace(" ", "")
+            return self.parser.specification["definitions"][definition_name], title
         else:
-            return definition
+            title = next(iter(definition)).replace(" ", " ").title().replace(" ", "")
+            return definition, title
 
     def _get_parameter_from_ref(self, parameter: dict):
         """
@@ -284,7 +287,7 @@ class Generator(object):
                     continue
 
             # Handle possible reference definition.
-            _property = self._get_definition_from_ref(details)
+            _property, title = self._get_definition_from_ref(details)
 
             # Not handling nested object definitions, yet, maybe.
             if "properties" in _property:
@@ -522,11 +525,9 @@ class Generator(object):
                 singular, op = operation_id.rsplit("_", 1)
                 plural = path[1:].split("/")[0]
                 details = VALID_OPERATIONS.get(op, None)
-
                 if details:
                     if plural not in self._resources:
                         self._resources[plural] = {
-                            "title": singular.replace("_", " ").title(),
                             "singular": singular,
                             "imports": set([]),
                             "methods": {},
@@ -536,20 +537,22 @@ class Generator(object):
                         }
                     self._resources[plural]["imports"].update(details["imports"])
 
+                    title = None
+
                     # Special additions for certain operation types.
                     if op == "list":
-                        self._current_definition = self._get_definition_from_ref(
+                        self._current_definition, title = self._get_definition_from_ref(
                             definition=io['responses']['200']['schema']['items']
                         )
                         self._build_filters(
                             resource=plural
                         )
                     elif op == "read":
-                        self._current_definition = self._get_definition_from_ref(
+                        self._current_definition, title = self._get_definition_from_ref(
                             definition=io['responses']['200']['schema']
                         )
                     elif op in ["create", "update"]:
-                        self._current_definition = self._get_parameter_definition()
+                        self._current_definition, title = self._get_parameter_definition()
                     elif op == "delete":
                         self._current_definition = None
                         if self.permissions:
@@ -562,6 +565,7 @@ class Generator(object):
 
                     # Build out the current resource if a definition is found.
                     if self._current_definition:
+                        self._resources[plural]["title"] = title
                         self._build_resource(
                             resource=plural,
                             singular=singular,
