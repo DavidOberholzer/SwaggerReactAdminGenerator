@@ -570,7 +570,7 @@ class Generator(object):
 
                         # Build in lines if existing page definition.
                         in_lines = all([
-                            op in ["edit", "read"],
+                            op in ["update", "read"],
                             singular in self.page_details
                         ])
 
