@@ -558,7 +558,7 @@ class Generator(object):
                     elif op == "delete":
                         self._current_definition = None
                         if self.permissions:
-                            permissions = io.get("x-aor-permissions", [])
+                            permissions = io.get("x-permissions", [])
                         else:
                             permissions = None
                         self._resources[plural]["methods"]["remove"] = {

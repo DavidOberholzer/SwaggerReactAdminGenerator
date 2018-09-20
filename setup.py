@@ -5,6 +5,10 @@ setup(
     name="Swagger React Admin Generator",
     version="0.0.1",
     description="Python React Admin Generator using a Swagger Specification.",
+    long_description="""
+    A python package created to generate a base React Admin client using a predefined swagger specification.
+    This package exists to avoid having to hand write the CRUD elements of the Admin and automate the process.
+    """,
     author="David Oberholzer",
     author_email="davidobework@gmail.com",
     license="MIT",
@@ -25,7 +29,7 @@ setup(
     tests_require=[],
     classifiers=[
         "Programming Language :: Python",
-        "License :: OSI Approved :: BSD License",
+        "License :: MIT License",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
