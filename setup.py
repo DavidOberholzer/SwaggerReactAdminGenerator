@@ -7,7 +7,7 @@ setup(
     description="Python React Admin Generator using a Swagger Specification.",
     author="David Oberholzer",
     author_email="davidobework@gmail.com",
-    license="BSD",
+    license="MIT",
     url="",
     packages=find_packages(exclude=["*.tests", "*.tests.*", "tests.*", "tests"]),
     package_data={
