@@ -8,3 +8,12 @@ venv/
 
 # demo
 demo/
+
+# Build and Distribution files/folders
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+build/
+dist/
+.DS_Store
