@@ -150,8 +150,7 @@ export const {{ resource.title }}{{ component|title }} = props => (
             </{{ inline.component }}>
             {% endif %}
             {% endfor %}
-        </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>{% if entries.responsive_fields %}} />{% endif %}
-    </{{ component|title }}>
+        </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>{% if entries.responsive_fields %}} />{% endif %}</{{ component|title }}>
 );
 
 {% endif %}
