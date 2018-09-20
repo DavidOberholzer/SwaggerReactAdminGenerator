@@ -682,18 +682,6 @@ class Generator(object):
             }
         )
 
-        click.secho("Generating auth login page...", fg="blue")
-        auth_dir = self.output_dir + "/auth"
-        if not os.path.exists(auth_dir):
-            os.makedirs(auth_dir)
-        self.create_and_generate_file(
-            _dir=auth_dir,
-            filename="authLogin",
-            context={
-                "permissions": self.permissions
-            }
-        )
-
         click.secho("Generating resource component files...", fg="blue")
         resource_dir = self.output_dir + "/resources"
         if not os.path.exists(resource_dir):
