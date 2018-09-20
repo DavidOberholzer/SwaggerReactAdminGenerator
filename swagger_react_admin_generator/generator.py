@@ -673,14 +673,6 @@ class Generator(object):
                 "resources": self._resources
             }
         )
-        click.secho("Generating auth provider...", fg="blue")
-        self.create_and_generate_file(
-            _dir=self.output_dir,
-            filename="authProvider",
-            context={
-                "permissions": self.permissions
-            }
-        )
         click.secho("Generating catch all...", fg="blue")
         self.create_and_generate_file(
             _dir=self.output_dir,
