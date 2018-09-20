@@ -6,7 +6,9 @@ import { Admin, Resource } from 'react-admin';
 
 import AuthLoginPage from './auth/authLogin';
 import authProvider from './auth/authProvider';
+{% if permissions %}
 import PermissionsStore from './auth/PermissionsStore';
+{% endif %}
 import catchAll from './catchAll';
 import dataProvider, { httpClient } from "./dataProvider";
 import MyLayout from './MyLayout';
