@@ -230,33 +230,35 @@ class Generator(object):
 
             # Check and handle related info
             related_info = _property["x-related-info"]
-            model = related_info.get("model", False)
-            if model:
-                related = True
-                # If model didn't even exist then attempt to guess the model
-                # from the substring before the last "_".
-                if not model:
-                    model = name.rsplit("_", 1)[0]
-                _field["label"] = model.replace("_", " ").title()
-                # If a custom base path has been given set the reference to it
-                # else attempt to get the plural of the given model.
-                if related_info.get("rest_resource_name", None) is not None:
-                    reference = related_info["rest_resource_name"]
-                else:
-                    reference = words.plural(model.replace("_", ""))
-                _field["reference"] = reference
-                # Get the option text to be used in the Select input from the
-                # label field, else guess it from the current property name.
-                guess = name.rsplit("_", 1)[1]
-                label = related_info.get("label", None) or guess
-                _field["option_text"] = label
+
+            if related_info:
+                model = related_info.get("model", False)
+                if model:
+                    related = True
+                    # If model didn't even exist then attempt to guess the model
+                    # from the substring before the last "_".
+                    if not model:
+                        model = name.rsplit("_", 1)[0]
+                    _field["label"] = model.replace("_", " ").title()
+                    # If a custom base path has been given set the reference to it
+                    # else attempt to get the plural of the given model.
+                    if related_info.get("rest_resource_name", None) is not None:
+                        reference = related_info["rest_resource_name"]
+                    else:
+                        reference = words.plural(model.replace("_", ""))
+                    _field["reference"] = reference
+                    # Get the option text to be used in the Select input from the
+                    # label field, else guess it from the current property name.
+                    guess = name.rsplit("_", 1)[1]
+                    label = related_info.get("label", None) or guess
+                    _field["option_text"] = label
 
             elif name.endswith("_id"):
                 related = True
                 relation = name.replace("_id", "")
                 _field["label"] = relation.title()
                 _field["reference"] = words.plural(relation)
-                _field["related_field"] = "id"
+                _field["option_text"] = "id"
 
         return related, _field
 
@@ -747,7 +749,7 @@ class Generator(object):
             if resource.get("filters", None) is not None:
                 title = resource.get("title", None)
                 if title:
-                    filter_file = f"{title}Filter.js"
+                    filter_file = f"{title}Filter"
                     self.create_and_generate_file(
                         _dir=filter_dir,
                         filename=filter_file,
@@ -765,12 +767,11 @@ class Generator(object):
                 os.makedirs(auth_dir)
             self.create_and_generate_file(
                 _dir=auth_dir,
-                filename="PermissionsStore.js",
+                filename="PermissionsStore",
                 context={
                     "resources": self._resources,
                     "supported_components": SUPPORTED_COMPONENTS.values()
-                },
-                source="PermissionsStore"
+                }
             )
             self.create_additional_files(PERMISSION_ADDITIONAL_FILES)
 
