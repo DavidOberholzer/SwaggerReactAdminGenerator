@@ -13,15 +13,15 @@ setup(
     package_data={
         "templates": ["*.py"]
     },
-    requires=[
-        "swagger-parser",
+    install_requires=[
+        "swagger_parser",
         "click",
         "inflect",
         "jinja2"
     ],
     dependency_links=[
-      "git+https://github.com/praekelt/swagger-parser@master#egg=swagger-parser",
-    ], 
+        "git+https://github.com/praekelt/swagger-parser@master#egg=swagger-parser",
+    ],
     tests_require=[],
     classifiers=[
         "Programming Language :: Python",
@@ -29,9 +29,8 @@ setup(
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     zip_safe=False
 )
