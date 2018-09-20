@@ -727,7 +727,7 @@ class Generator(object):
                 methods = resource["methods"].keys()
                 for method in methods:
                     if method in ["list", "show", "edit"]:
-                        action_file = f"{title}{method.title()}Actions.js"
+                        action_file = f"{title}{method.title()}Actions"
                         self.create_and_generate_file(
                             _dir=action_dir,
                             filename=action_file,
