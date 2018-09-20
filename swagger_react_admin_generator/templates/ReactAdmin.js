@@ -4,6 +4,7 @@
 **/
 import { Admin, Resource } from 'react-admin';
 
+import AuthLoginPage from './auth/authLogin';
 import authProvider from './auth/authProvider';
 import PermissionsStore from './auth/PermissionsStore';
 import catchAll from './catchAll';
@@ -30,6 +31,7 @@ const ReactAdmin = () => (
         authProvider={authProvider}
         catchAll={catchAll}
         dataProvider={dataProvider('rest_server_url', httpClient)}
+        loginPage={AuthLoginPage}
         title="{{ title }}"
         theme={muiTheme}
     >
