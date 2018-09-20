@@ -11,7 +11,7 @@ class PermissionsStore {
                 {% if details.methods %}
                 {{ name }}: {
                     {% for method, action in details.methods.items() %}
-                    {% if method in supported_components and method != "show" %}
+                    {% if method != "show" %}
                     {{ method }}: {{ action.permissions }},
                     {% endif %}
                     {% endfor %}
