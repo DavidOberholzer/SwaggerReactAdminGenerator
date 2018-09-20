@@ -11,3 +11,4 @@ Changelog
     - View Action Files
     - Supporting auth and layout files
 * Permissions flag for permissions to be included.
+* Documentation added.

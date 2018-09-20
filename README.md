@@ -373,7 +373,7 @@ This will use the suggested implementation https://marmelab.com/react-admin/Them
 
 ### List Filters
 
-List filters are all generated in and additional file `Filters.js`. In order to generate filters, the path in charge of dictating the list component must contain optional query parameters. These will be noticed by the generator and added to the list components filter props. Taking from the `pet` specification established above we have:
+List filters are all generated in an additional files suffixed by `Filter.js`. In order to generate filters, the path in charge of dictating the list component must contain optional query parameters. These will be noticed by the generator and added to the list components filter props. Taking from the `pet` specification established above we have:
 
 ```
 "get": {
@@ -400,7 +400,7 @@ List filters are all generated in and additional file `Filters.js`. In order to 
       "name": "date_of_birth",
       "required": false,
       "type": "string",
-      "x-aor-filter": {
+      "x-filter": {
         "format": "date",
         "range": true
       }
@@ -425,10 +425,93 @@ List filters are all generated in and additional file `Filters.js`. In order to 
 ```
 
 Here we have one parameter named `pet_id`. This parameter is given `in` the `query`. This will generate a filter component for Pet list with a single filter option, many can be added to the parameters for more filter options.
-The filter `type`/`format` is important for the component to be used and maps to the table as given above in the `Definition Configuration` section. Also each query parameter can have a `minLength` attribute which will dictate in the `restClient.js` to only query when the minimum length of input has been typed in that filter.
+The filter `type`/`format` is important for the component to be used and maps to the table as given above in the `Definition Configuration` section. Also each query parameter can have a `minLength` attribute which will dictate in the `dataProvider.js` to only query when the minimum length of input has been typed in that filter.
 
 *NOTE*: Array filters are handled, however only with a CSV format parser on the TextField input. The input will be transformed into a list joined by `,`. ie typing in "hello you,8 9" will become "hello,you,8,9". Validation is performed on an integer type only. 
 
-## Note
+### Relation Filter Dropdowns
 
-This tool is currently under construction and will be completed and probably moved else where soon. Check in a few days/weeks.
+If you would like a filter to be a dropdown selection of a related model rather than just a text/number input, add the previously mentioned `x-related-info` to the parameter. The only 2 attributes used with the `x-related-info` on a filter parameter, are `rest_resource_name` and `label`.
+
+*NOTE* If you would like to not include a parameter as a filter, add the following to the parameter definition:
+
+`x-exlude: true`
+
+## Permissions
+
+You can have a permissions setup on your React Admin generated code. For this you can set the flag `--permissions` when running the generator. To handle permissions in your swagger specification, add a `x-permissions` array to each one of the `list`, `create`, `update` and `delete` methods specified above in your specifcation at the `operationId` level. An example is shown below:
+
+```
+...
+"operationId": "pet_list",
+"x-permissions": [
+  "pet:read"
+],
+...
+```
+
+It can be seen that permission to get a pet list from the API will require the user to have all the permissions listed in the `x-permissions` array.
+
+When the permission flag is set on generation, a file `PermissionsStore.js` will be created which instantiates a PermissionsStore Singleton instance that can be imported into any of your files has the following attributes:
+
+| Attribute                                      | Description                                                                                                                                  |
+| -----------------------------------------------| ---------------------------------------------------------------------------------------------------------------------------------------------|
+| loadPermissions(permissions)                   | Load permission flags with the `permissions` list given.                                                                                     |
+| getResourcePermission(resource, permission)    | Get the resource permission flag for the user. ie `getResourcePermission('pet', 'list')`                                                     |
+| permissionFlags                                | The permission flags mapping that is populated after loadPermissions has been loaded.                                                        |
+
+
+Example:
+
+If I have the single `pet_list` operation with the permissions listed above and a user with the permissions `["pet:read"]`, when the PermissionsStore is loaded, then the following permissionFlags object will be created and can be requested with the `getResourcePermission` function:
+
+```
+{
+  pets: [object Object] {
+    list: true
+  }
+}
+```
+
+If the user has the permissions `["owner:read"]` then the above flag will be `false`. 
+
+These permissions will need to be loaded prior to the Admin being rendered. Therefore on login, if you would like to use the PermissionsStore, please call `loadPermissions` with a list of the permissions you want loaded prior to rendering the Main Admin component.
+
+PLEASE feel free to replace the permissions setup with your own, this setup was based on a project that this tool was built for and can be helpful but only if you would like it to be there.
+
+*NOTE*: If an endpoint has no permissions listed, it is assumed that all users have permission to perform that action. 
+
+## authProvider
+
+A basic auth provider setup is not included.
+
+## dataProvider
+
+The given `dataProvider.js` will perform the following:
+* Convert a REST (JSON) request to an HTTP request for the service to be integrated with.
+* Convert a HTTP response to a REST (JSON) response for consumption in the React Admin.
+
+Replace with your own dataProvider if this is not what you need.
+
+## Generated code formatting
+
+The generated code will not be pretty due to the templates being quite difficult to keep good formatting.
+Therefore a suggestion would be to add a shell script to run after generating:
+
+```
+#!/bin/bash
+# A script to run prettier on all generated admin js files before melding.
+
+FILES=`find ./{your_generated_directory} -type f -name '*.js'`
+for file in $FILES
+do
+yarn prettier --write --single-quote --tab-width 4 --print-width 100 "$file"
+done
+```
+
+Make sure you have installed the npm package `prettier`.
+
+## TODOS (What would be cool as well)
+
+* Fix up templates folder/file organization, thus resulting in some minor code changes. (Neatening up).
+* Add more range based filter types (like integer/number range).

@@ -20,7 +20,6 @@ class PermissionsStore {
                 {% endfor %}
             };
             this.permissionFlags = null;
-            this.getAndLoadPermissions = this.getAndLoadPermissions.bind(this);
             this.loadPermissions = this.loadPermissions.bind(this);
             this.getResourcePermission = this.getResourcePermission.bind(this);
             this.manyResourcePermissions = this.manyResourcePermissions.bind(this);
@@ -29,17 +28,29 @@ class PermissionsStore {
         }
         return PermissionsStore.instance;
     }
-    getAndLoadPermissions(requestDetails) {
-        // Here one can make a request and send the result along to `loadPermissions`
-        fetch('some_url', requestDetails)
-            .then(response => this.loadPermissions(response.data))
-            .catch(error => console.error(error));
-    }
     loadPermissions(permissions) {
-        // Here one can load the permissions object into localStorage and other things you would like.
-        this.permissionFlags = {
-            ...permissions
+        // Given a list of the user permissions, the permission flags are loaded.
+        this.permissionFlags = {};
+        const allowAccess = (userPermissions, requiredPermissions) => {
+            if (requiredPermissions.length > 0) {
+                return requiredPermissions.every(permission => {
+                    return userPermissions.has(permission);
+                });
+            } else {
+                return true;
+            }
         };
+        const permissionSet = new Set(userPermissions);
+        Object.entries(this.requiredPermissions).map(([resource, permissions]) => {
+            this.permissionFlags[resource] = Object.entries(permissions).reduce(
+                (total, [action, required]) => {
+                    total[action] = allowAccess(permissionSet, required);
+                    return total;
+                },
+                {}
+            );
+            return null;
+        });
         localStorage.setItem('permissions', JSON.stringify(this.permissionFlags));
     }
     getResourcePermission(resource, permission) {

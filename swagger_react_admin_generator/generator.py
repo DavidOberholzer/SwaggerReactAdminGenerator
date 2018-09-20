@@ -544,6 +544,7 @@ class Generator(object):
                         self._current_definition, title = self._get_definition_from_ref(
                             definition=io['responses']['200']['schema']['items']
                         )
+                        self._resources[plural]["title"] = title
                         self._build_filters(
                             resource=plural
                         )
@@ -551,6 +552,7 @@ class Generator(object):
                         self._current_definition, title = self._get_definition_from_ref(
                             definition=io['responses']['200']['schema']
                         )
+                        self._resources[plural]["title"] = title
                     elif op in ["create", "update"]:
                         self._current_definition, title = self._get_parameter_definition()
                     elif op == "delete":
@@ -565,7 +567,6 @@ class Generator(object):
 
                     # Build out the current resource if a definition is found.
                     if self._current_definition:
-                        self._resources[plural]["title"] = title
                         self._build_resource(
                             resource=plural,
                             singular=singular,
