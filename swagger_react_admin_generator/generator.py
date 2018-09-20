@@ -257,13 +257,6 @@ class Generator(object):
                     label = related_info.get("label", None) or guess
                     _field["option_text"] = label
 
-            elif name.endswith("_id"):
-                related = True
-                relation = name.replace("_id", "")
-                _field["label"] = relation.title()
-                _field["reference"] = words.plural(relation)
-                _field["option_text"] = "id"
-
         return related, _field
 
     def _build_fields(self, resource: str, singular: str, properties: dict, _input: bool, fields: list):
