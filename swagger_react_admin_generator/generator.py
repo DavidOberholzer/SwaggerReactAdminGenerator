@@ -694,7 +694,7 @@ class Generator(object):
                     filename=title,
                     context={
                         "action_components": ACTION_COMPONENTS,
-                        "name": title,
+                        "title": title,
                         "resource": resource,
                         "permissions": self.permissions,
                         "supported_components": SUPPORTED_COMPONENTS.values()
