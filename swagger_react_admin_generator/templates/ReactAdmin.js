@@ -2,6 +2,7 @@
  * Generated ReactAdmin.js code. Edit at own risk.
  * When regenerated the changes will be lost.
 **/
+import React from 'react';
 import { Admin, Resource } from 'react-admin';
 
 import AuthLoginPage from './auth/authLogin';

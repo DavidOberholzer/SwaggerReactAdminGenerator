@@ -526,7 +526,7 @@ class Generator(object):
                 if details:
                     if plural not in self._resources:
                         self._resources[plural] = {
-                            "title": singular.title(),
+                            "title": singular.replace("_", " ").title(),
                             "singular": singular,
                             "imports": set([]),
                             "methods": {},

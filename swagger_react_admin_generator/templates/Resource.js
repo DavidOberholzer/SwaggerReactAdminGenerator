@@ -1,5 +1,5 @@
 /**
- * Generated {{ resource.title }}.js code. Edit at own risk.
+ * Generated {{ title }}.js code. Edit at own risk.
  * When regenerated the changes will be lost.
 **/
 import React from 'react';
@@ -14,12 +14,12 @@ import {{ _import.name }} from '{{ _import.directory }}';
 
 {% for component in resource.methods.keys() %}
 {% if component in action_components %}
-import {{ resource.title }}{{ component|title }}Actions from '../customActions/{{ resource.title }}{{ component|title }}Actions';
+import {{ title }}{{ component|title }}Actions from '../customActions/{{ title }}{{ component|title }}Actions';
 {% endif %}
 {% endfor %}
 
 {% if resource.filters %}
-import {{ resource.title }}Filter from '../filters/{{ resource.title }}Filter';
+import {{ title }}Filter from '../filters/{{ title }}Filter';
 {% endif %}
 
 {% if resource.methods.create %}
@@ -70,8 +70,8 @@ const choice{{ method|title }}{{ attribute.source|title }} = [
 {% endfor %}
 {% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
-export const {{ resource.title }}{{ component|title }} = props => (
-    <{{ component|title }} {...props} title="{{ resource.title }} {{ component|title }}"{% if component in action_components %} actions={<{{ resource.title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" and resource.filters %} filters={<{{ resource.title }}Filter />}{% endif %}>
+export const {{ title }}{{ component|title }} = props => (
+    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component in action_components %} actions={<{{ title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" and resource.filters %} filters={<{{ title }}Filter />}{% endif %}>
         {% if entries.responsive_fields %}
         <Responsive
             small={
