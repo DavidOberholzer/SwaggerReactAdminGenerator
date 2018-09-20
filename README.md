@@ -515,3 +515,4 @@ Make sure you have installed the npm package `prettier`.
 
 * Fix up templates folder/file organization, thus resulting in some minor code changes. (Neatening up).
 * Add more range based filter types (like integer/number range).
+* Add basic role setup as per React admin documentation https://marmelab.com/react-admin/Authorization.html
