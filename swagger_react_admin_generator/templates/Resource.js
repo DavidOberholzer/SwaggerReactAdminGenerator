@@ -23,7 +23,7 @@ import {{ title }}Filter from '../filters/{{ title }}Filter';
 {% endif %}
 
 {% if resource.methods.create %}
-const validationCreate{{ name }} = values => {
+const validationCreate{{ title }} = values => {
     const errors = {};
     {% for attribute in resource.methods.create.fields %}
     {% if attribute.required %}
@@ -37,7 +37,7 @@ const validationCreate{{ name }} = values => {
 
 {% endif %}
 {% if resource.methods.edit %}
-const validationEdit{{ name }} = values => {
+const validationEdit{{ title }} = values => {
     const errors = {};
     {% for attribute in resource.methods.edit.fields %}
     {% if attribute.required %}
