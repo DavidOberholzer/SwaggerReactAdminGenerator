@@ -83,7 +83,7 @@ export const {{ title }}{{ component|title }} = props => (
             }
             medium={
         {% endif %}
-        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ name }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
+        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ title }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
             {% for attribute in entries.fields %}
             {% if attribute.read_only and component == "create" %}{% else %}
             {% if attribute.related_component %}
