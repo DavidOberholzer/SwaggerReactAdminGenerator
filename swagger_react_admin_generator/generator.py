@@ -75,10 +75,10 @@ SUPPORTED_COMPONENTS = {
     "update": "edit"
 }
 
-ACTION_COMPONENTS = ["list", "edit", "show"]
+ACTION_COMPONENTS = ["edit"]
 
 ADDITIONAL_FILES = {
-    "root": ["theme.js", "MyLayout.js"],
+    "root": ["theme.js", "MyLayout.js", "customRoutes.js"],
     "fields": ["EmptyField.js", "ObjectField.js"]
 }
 
@@ -714,7 +714,7 @@ class Generator(object):
             if title:
                 methods = resource["methods"].keys()
                 for method in methods:
-                    if method in ["list", "show", "edit"]:
+                    if method in ACTION_COMPONENTS:
                         action_file = f"{title}{method.title()}Actions"
                         self.create_and_generate_file(
                             _dir=action_dir,

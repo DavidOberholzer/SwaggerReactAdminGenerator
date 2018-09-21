@@ -71,7 +71,7 @@ const choice{{ method|title }}{{ attribute.source|title }} = [
 {% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
 export const {{ title }}{{ component|title }} = props => (
-    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component in action_components %} actions={<{{ title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" and resource.filters %} filters={<{{ title }}Filter />}{% endif %}>
+    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component in action_components %} actions={<{{ title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" %}{% if resource.filters %} filters={<{{ title }}Filter />}{% endif %} bulkActionButtons={false}{% endif %}>
         {% if entries.responsive_fields %}
         <Responsive
             small={
@@ -150,6 +150,25 @@ export const {{ title }}{{ component|title }} = props => (
             </{{ inline.component }}>
             {% endif %}
             {% endfor %}
+            {% if component == "list" %}
+            {% if resource.edit %}
+            {% if add_permissions %}
+            {PermissionsStore.getResourcePermission('{{ name }}', 'edit') ? <EditButton /> : null}
+            {% else %}
+            <EditButton />
+            {% endif %}
+            {% endif %}
+            {% if resource.show %}
+            <ShowButton />
+            {% endif %}
+            {% if resource.remove %}
+            {% if add_permissions %}
+            {PermissionsStore.getResourcePermission('{{ name }}', 'remove') ? <DeleteButton />: null}
+            {% else %}
+            <DeleteButton />
+            {% endif %}
+            {% endif %}
+            {% endif %}
         </{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% endif %}>{% if entries.responsive_fields %}} />{% endif %}</{{ component|title }}>
 );
 

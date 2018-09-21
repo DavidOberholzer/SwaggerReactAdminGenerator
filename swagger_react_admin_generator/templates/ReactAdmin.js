@@ -10,6 +10,7 @@ import authProvider from './auth/authProvider';
 import PermissionsStore from './auth/PermissionsStore';
 {% endif %}
 import catchAll from './catchAll';
+import customRoutes from './customRoutes';
 import dataProvider from "./dataProvider";
 import MyLayout from './MyLayout';
 import { theme } from './theme';
@@ -32,6 +33,7 @@ const ReactAdmin = () => (
         appLayout={MyLayout}
         authProvider={authProvider}
         catchAll={catchAll}
+        customRoutes={customRoutes}
         dataProvider={dataProvider}
         title="{{ title }}"
         theme={theme}
@@ -54,7 +56,8 @@ const ReactAdmin = () => (
                         {% endfor %}
                     /> : null,
             {% endif %}
-            {% endfor %}
+            {% endfor %},
+            <Resource name="catchAll" />
         ]}
     {% else %}
     {% for name, details in resources.items() %}
