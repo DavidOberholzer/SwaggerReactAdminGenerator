@@ -378,7 +378,7 @@ class Generator(object):
                     "title": field.replace("_", " ").title()
                 }
             if responsive_obj:
-                _imports.add("Responsive")
+                _imports.update(["Responsive", "SimpleList"])
             self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]] = {
                 "fields": _fields,
                 "permissions": permissions,

@@ -28,4 +28,4 @@ class {{ title }}EditActions extends Component {
     }
 }
 
-export default {{ title }}ShowActions;
+export default {{ title }}EditActions;
