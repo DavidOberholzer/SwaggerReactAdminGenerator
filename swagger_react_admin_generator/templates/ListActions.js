@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { {% if "create" in methods %}CreateButton, {% endif %}RefreshButton } from 'react-admin';
-import { CardActions } from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 
 {% if permissions and "create" in methods %}
 import PermissionsStore from '../auth/PermissionsStore';

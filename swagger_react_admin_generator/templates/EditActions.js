@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { {% if "remove" in methods %}DeleteButton, {% endif %}ListButton, RefreshButton, ShowButton } from 'react-admin';
-import { CardActions } from '@material-ui/core/Card';
+import CardActions from '@material-ui/core/CardActions';
 
 {% if permissions and "remove" in methods %}
 import PermissionsStore from '../auth/PermissionsStore';
