@@ -400,7 +400,7 @@ class Generator(object):
             valid = all([
                 param["in"] == "query",
                 param["type"] in INPUT_COMPONENT_MAPPING,
-                "x-exclude" not in param
+                "x-admin-exclude" not in param
             ])
 
             if valid:
@@ -513,11 +513,12 @@ class Generator(object):
                 else:
                     # Check if operation id is a valid operation.
                     operation_id = io.get("operationId", "")
+                    exclude = io.get("x-admin-exclude", False)
                     valid_operation = any([
                         operation in operation_id
                         for operation in VALID_OPERATIONS
                     ])
-                    if not operation_id or not valid_operation:
+                    if not operation_id or not valid_operation or exclude:
                         continue
 
                 singular, op = operation_id.rsplit("_", 1)

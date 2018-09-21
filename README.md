@@ -159,6 +159,12 @@ Here we can go over the endpoints and how they will be used in generation.
 
 `/pets/{pet_id} DELETE`: This path method will signify if the model can be deleted and the delete action will then be included on the show and edit views.
 
+### Exlcude a path
+
+Some paths maybe operational and perform specific actions that are not simple CRUD. For these to be safe add the flag on the `operationId` level.
+
+`x-admin-exlude: true`
+
 ### Definition Configuration
 
 A simple definition can be given as follows:
@@ -435,7 +441,7 @@ If you would like a filter to be a dropdown selection of a related model rather 
 
 *NOTE* If you would like to not include a parameter as a filter, add the following to the parameter definition:
 
-`x-exlude: true`
+`x-admin-exlude: true`
 
 ## Permissions
 

@@ -65,6 +65,27 @@ parameters:
 
 paths:
 
+  /ops/get_pets_under_category/{category_id}:
+    parameters:
+      - $ref: '#/parameters/category_id'
+    get:
+      description: 'Get a list of all pets under the specified category.'
+      operationId: get_sites_under_category
+      x-admin-exclude: true
+      produces:
+        - application/json
+      responses:
+        200:
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/pet'
+        403:
+          description: 'Forbidden'
+      tags:
+        - operational
+
   /pets:
     get:
       operationId: pet_list
