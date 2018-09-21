@@ -237,5 +237,5 @@ export const httpClient = (url, options = {}) => {
     return fetchUtils.fetchJson(url, options);
 };
 
-export default dataProvider;
+export default dataProvider('rest_url', httpClient);
 /** End of Generated Code **/

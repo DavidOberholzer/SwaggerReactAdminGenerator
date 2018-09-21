@@ -3,7 +3,9 @@ import { {% if "remove" in methods %}DeleteButton, {% endif %}ListButton, Refres
 import { CardActions } from '@material-ui/core/Card';
 
 {% if permissions %}
+{% if "edit" in methods or "remove" in methods %}
 import PermissionsStore from '../auth/PermissionsStore';
+{% endif %}
 {% endif %}
 
 class {{ title }}ShowActions extends Component {

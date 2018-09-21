@@ -32,7 +32,7 @@ const ReactAdmin = () => (
         appLayout={MyLayout}
         authProvider={authProvider}
         catchAll={catchAll}
-        dataProvider={dataProvider('rest_server_url', httpClient)}
+        dataProvider={dataProvider}
         title="{{ title }}"
         theme={theme}
     >
