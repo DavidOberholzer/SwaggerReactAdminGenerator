@@ -16,7 +16,9 @@ class {{ title }}ListActions extends Component {
             filterValues,
             showFilter,
             {% endif %}
+            {% if "create" in methods %}
             basePath
+            {% endif %}
         } = this.props;
         return (
             <CardActions>

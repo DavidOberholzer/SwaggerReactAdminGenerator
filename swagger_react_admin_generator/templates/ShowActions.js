@@ -10,7 +10,7 @@ import PermissionsStore from '../auth/PermissionsStore';
 
 class {{ title }}ShowActions extends Component {
     render() {
-        const { basePath, data } = this.props;
+        const { basePath{% if "edit" in methods or "remove" in methods %}, data{% endif %} } = this.props;
         return (
             <CardActions>
                 {% if "edit" in methods %}

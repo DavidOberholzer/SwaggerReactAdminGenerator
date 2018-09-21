@@ -223,13 +223,6 @@ class Generator(object):
         related = False
         if "x-related-info" in _property:
 
-            # Check and add permission imports if found
-            has_permissions = self._resources[resource]["has_permission_fields"]
-            if self.permissions and not has_permissions:
-                self._resources[resource]["has_permission_fields"] = True
-                self._resources[resource]["custom_imports"].update(
-                    ["empty", "permissions"]
-                )
 
             # Check and handle related info
             related_info = _property["x-related-info"]
@@ -238,6 +231,13 @@ class Generator(object):
                 model = related_info.get("model", False)
                 # Check if related model is not set to None.
                 if model is not None:
+                    # Check and add permission imports if found
+                    has_permissions = self._resources[resource]["has_permission_fields"]
+                    if self.permissions and not has_permissions:
+                        self._resources[resource]["has_permission_fields"] = True
+                        self._resources[resource]["custom_imports"].update(
+                            ["empty", "permissions"]
+                        )
                     related = True
                     # If model didn't even exist then attempt to guess the model
                     # from the substring before the last "_".
@@ -466,6 +466,12 @@ class Generator(object):
             mapping = FIELD_COMPONENT_MAPPING
 
         for in_line in self.page_details[singular].get("inlines", []):
+            has_permissions = self._resources[resource]["has_permission_fields"]
+            if self.permissions and not has_permissions:
+                self._resources[resource]["has_permission_fields"] = True
+                self._resources[resource]["custom_imports"].update(
+                    ["empty", "permissions"]
+                )
             model = in_line["model"]
             label = in_line.get("label", None)
 
@@ -535,8 +541,6 @@ class Generator(object):
                             "custom_imports": set([])
                         }
                     self._resources[plural]["imports"].update(details["imports"])
-
-                    title = None
 
                     # Special additions for certain operation types.
                     if op == "list":
