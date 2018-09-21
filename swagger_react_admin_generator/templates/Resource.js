@@ -8,13 +8,13 @@ import {
     {{ _import }},
     {% endfor %}
     {% if resource.methods.edit %}
-    <EditButton />,
+    EditButton,
     {% endif %}
     {% if resource.methods.show %}
-    <ShowButton />,
+    ShowButton,
     {% endif %}
     {% if resource.methods.remove %}
-    <DeleteButton />,
+    DeleteButton,
     {% endif %}
 } from 'react-admin';
 {% for _import in resource.custom_imports %}
