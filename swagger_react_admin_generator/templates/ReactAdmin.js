@@ -10,9 +10,9 @@ import authProvider from './auth/authProvider';
 import PermissionsStore from './auth/PermissionsStore';
 {% endif %}
 import catchAll from './catchAll';
-import dataProvider, { httpClient } from "./dataProvider";
+import dataProvider from "./dataProvider";
 import MyLayout from './MyLayout';
-import { muiTheme } from './theme';
+import { theme } from './theme';
 
 {% for name, details in resources.items() %}
 {% if details.methods %}
@@ -34,7 +34,7 @@ const ReactAdmin = () => (
         catchAll={catchAll}
         dataProvider={dataProvider('rest_server_url', httpClient)}
         title="{{ title }}"
-        theme={muiTheme}
+        theme={theme}
     >
     {% if permissions %}
         {permissions => [

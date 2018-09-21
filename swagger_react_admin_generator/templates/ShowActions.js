@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { DeleteButton, ListButton, RefreshButton, EditButton } from 'react-admin';
+import { {% if "remove" in methods %}DeleteButton, {% endif %}ListButton, RefreshButton{% if "edit" in methods %}, EditButton{% endif %} } from 'react-admin';
 import { CardActions } from '@material-ui/core/Card';
 
 {% if permissions %}
