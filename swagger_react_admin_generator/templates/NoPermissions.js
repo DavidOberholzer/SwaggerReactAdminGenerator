@@ -1,5 +1,5 @@
 import React from 'react';
-import NotAllowed from 'material-ui/svg-icons/av/not-interested';
+import NotAllowed from '@material-ui/icons/NotInterested';
 
 const NoPermissions = () => (
 	<div>

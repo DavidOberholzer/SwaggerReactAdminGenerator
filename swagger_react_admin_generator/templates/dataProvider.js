@@ -1,5 +1,5 @@
 /**
- * Generated restClient.js code. Edit at own risk.
+ * Generated dataProvider.js code. Edit at own risk.
  * When regenerated the changes will be lost.
  **/
 import { stringify } from 'query-string';

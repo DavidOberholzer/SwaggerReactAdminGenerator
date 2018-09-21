@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { DeleteButton, ListButton, RefreshButton, EditButton } from 'react-admin';
-import { CardActions } from 'material-ui/Card';
+import { CardActions } from '@material-ui/core/Card';
 
 {% if permissions %}
 import PermissionsStore from '../auth/PermissionsStore';

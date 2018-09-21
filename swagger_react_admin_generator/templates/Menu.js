@@ -5,7 +5,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { MenuItemLink, getResources, Responsive } from 'react-admin';
-import ListIcon from 'material-ui/svg-icons/action/view-list';
+import ListIcon from '@material-ui/icons/ViewList';
 import { titleCase } from './utils';
 
 const ICONS = {
