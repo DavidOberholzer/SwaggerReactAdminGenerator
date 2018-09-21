@@ -7,6 +7,15 @@ import {
     {% for _import in resource.imports %}
     {{ _import }},
     {% endfor %}
+    {% if resource.methods.edit %}
+    <EditButton />,
+    {% endif %}
+    {% if resource.methods.show %}
+    <ShowButton />,
+    {% endif %}
+    {% if resource.methods.remove %}
+    <DeleteButton />,
+    {% endif %}
 } from 'react-admin';
 {% for _import in resource.custom_imports %}
 import {{ _import.name }} from '{{ _import.directory }}';
@@ -151,17 +160,17 @@ export const {{ title }}{{ component|title }} = props => (
             {% endif %}
             {% endfor %}
             {% if component == "list" %}
-            {% if resource.edit %}
+            {% if resource.methods.edit %}
             {% if add_permissions %}
             {PermissionsStore.getResourcePermission('{{ name }}', 'edit') ? <EditButton /> : null}
             {% else %}
             <EditButton />
             {% endif %}
             {% endif %}
-            {% if resource.show %}
+            {% if resource.methods.show %}
             <ShowButton />
             {% endif %}
-            {% if resource.remove %}
+            {% if resource.methods.remove %}
             {% if add_permissions %}
             {PermissionsStore.getResourcePermission('{{ name }}', 'remove') ? <DeleteButton />: null}
             {% else %}
