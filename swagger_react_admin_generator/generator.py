@@ -484,7 +484,7 @@ class Generator(object):
             self._resources[resource]["imports"].add(many_field["component"])
             _def = self.parser.specification["definitions"][in_line["model"]]
             properties = _def.get("properties", {})
-            many_field["fields"], imports = self._build_fields(
+            many_field["fields"], _imports = self._build_fields(
                 resource=resource,
                 singular=singular,
                 properties=properties,
@@ -492,6 +492,7 @@ class Generator(object):
                 fields=fields
             )
             in_lines.append(many_field)
+            self._resources[resource]["imports"].update(_imports)
 
         self._resources[resource]["methods"][SUPPORTED_COMPONENTS[method]]["inlines"] = in_lines
 
