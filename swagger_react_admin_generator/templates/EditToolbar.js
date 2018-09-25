@@ -33,4 +33,6 @@ const {{ resource.title }}EditToolbar = props => (
         {% endif %}
     </Toolbar>
 );
+
+export default {{ resource.title }}EditToolbar;
 /** End of Generated Code **/
