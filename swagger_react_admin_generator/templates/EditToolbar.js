@@ -13,7 +13,6 @@ const {{ resource.title }}EditToolbar = props => (
     <Toolbar {...props}>
         <SaveButton
             label="Save"
-            redirect="show"
             submitOnEnter={true}
         />
         <SaveButton
