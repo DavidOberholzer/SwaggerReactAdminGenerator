@@ -124,7 +124,7 @@ export const {{ title }}{{ component|title }} = props => (
             {% if permissions %}
             {PermissionsStore.getResourcePermission('{{ inline.reference }}', 'list') ? (
                 <{{ inline.component }} label="{{ inline.label }}" reference="{{ inline.reference }}" target="{{ inline.target }}">
-                    <Datagrid bodyOptions={ { showRowHover: true } }>
+                    <Datagrid>
                         {% for attribute in inline.fields %}
                         {% if attribute.related_component %}
                         {PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list') ? (
@@ -143,7 +143,7 @@ export const {{ title }}{{ component|title }} = props => (
             ) : {% if component == "show" %}(<EmptyField />){% else %}null{% endif %}}
             {% else %}
             <{{ inline.component }} label="{{ inline.label }}" reference="{{ inline.reference }}" target="{{ inline.target }}">
-                <Datagrid bodyOptions={ { showRowHover: true } }>
+                <Datagrid>
                     {% for attribute in inline.fields %}
                     {% if attribute.related_component %}
                     <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
