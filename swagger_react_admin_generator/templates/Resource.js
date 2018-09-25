@@ -21,11 +21,9 @@ import {
 import {{ _import.name }} from '{{ _import.directory }}';
 {% endfor %}
 
-{% for component in resource.methods.keys() %}
-{% if component in action_components %}
-import {{ title }}{{ component|title }}Actions from '../customActions/{{ title }}{{ component|title }}Actions';
+{% if resource.methods.edit %}
+import {{ title }}EditToolbar from '../customActions/{{ title }}EditToolbar';
 {% endif %}
-{% endfor %}
 
 {% if resource.filters %}
 import {{ title }}Filter from '../filters/{{ title }}Filter';
@@ -80,7 +78,7 @@ const choice{{ method|title }}{{ attribute.source|title }} = [
 {% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
 export const {{ title }}{{ component|title }} = props => (
-    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component in action_components %} actions={<{{ title }}{{ component|title }}Actions />}{% endif %}{% if component == "list" %}{% if resource.filters %} filters={<{{ title }}Filter />}{% endif %} bulkActionButtons={false}{% endif %}>
+    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component == "list" %}{% if resource.filters %} filters={<{{ title }}Filter />}{% endif %} bulkActionButtons={false}{% endif %}>
         {% if entries.responsive_fields %}
         <Responsive
             small={
@@ -92,7 +90,7 @@ export const {{ title }}{{ component|title }} = props => (
             }
             medium={
         {% endif %}
-        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ title }}}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
+        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ title }}} toolbar={<{{ title }}EditToolbar />}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
             {% for attribute in entries.fields %}
             {% if attribute.read_only and component == "create" %}{% else %}
             {% if attribute.related_component %}

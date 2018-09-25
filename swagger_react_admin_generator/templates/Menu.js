@@ -19,7 +19,7 @@ const ICONS = {
 const Menu = ({ resources, onMenuClick, logout }) => (
     <div>
         {resources
-            ? resources.map(resource => (
+            ? resources.map(resource => resource.hasList ? (
                     <MenuItemLink
                         key={resource.name}
                         to={`/${resource.name}`}
@@ -27,7 +27,7 @@ const Menu = ({ resources, onMenuClick, logout }) => (
                         onClick={onMenuClick}
                         leftIcon={ICONS[resource.name]}
                     />
-                ))
+                ) : null)
             : ''}
         <Responsive small={logout} medium={null} />
     </div>

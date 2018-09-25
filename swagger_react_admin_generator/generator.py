@@ -75,8 +75,6 @@ SUPPORTED_COMPONENTS = {
     "update": "edit"
 }
 
-ACTION_COMPONENTS = ["edit"]
-
 ADDITIONAL_FILES = {
     "root": ["theme.js", "MyLayout.js", "customRoutes.js"],
     "fields": ["EmptyField.js", "ObjectField.js"]
@@ -696,7 +694,6 @@ class Generator(object):
                     _dir=resource_dir,
                     filename=title,
                     context={
-                        "action_components": ACTION_COMPONENTS,
                         "title": title,
                         "resource": resource,
                         "permissions": self.permissions,
@@ -705,29 +702,25 @@ class Generator(object):
                     source="Resource"
                 )
 
-        click.secho("Generating custom action component files...", fg="blue")
+        click.secho("Generating custom edit toolbar component files...", fg="blue")
         action_dir = self.output_dir + "/customActions"
         if not os.path.exists(action_dir):
             os.makedirs(action_dir)
         for name, resource in self._resources.items():
             title = resource.get("title", None)
             if title:
-                methods = resource["methods"].keys()
-                for method in methods:
-                    if method in ACTION_COMPONENTS:
-                        action_file = f"{title}{method.title()}Actions"
-                        self.create_and_generate_file(
-                            _dir=action_dir,
-                            filename=action_file,
-                            context={
-                                "title": title,
-                                "name": name,
-                                "methods": methods,
-                                "resource": resource,
-                                "permissions": self.permissions
-                            },
-                            source=f"{method.title()}Actions"
-                        )
+                if "edit" in resource["methods"]:
+                    action_file = f"{title}EditToolbar"
+                    self.create_and_generate_file(
+                        _dir=action_dir,
+                        filename=action_file,
+                        context={
+                            "name": name,
+                            "resource": resource,
+                            "permissions": self.permissions
+                        },
+                        source=f"EditToolbar"
+                    )
 
         click.secho("Generating Filter files for resources...", fg="blue")
         filter_dir = self.output_dir + "/filters"
