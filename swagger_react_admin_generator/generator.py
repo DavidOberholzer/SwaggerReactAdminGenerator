@@ -86,7 +86,7 @@ PERMISSION_ADDITIONAL_FILES = {
 
 CUSTOM_PROPS = {
     "date-time-range": {
-        "style": "{ marginRight: 10, marginBottom: 8 }",
+        "style": "{{ marginRight: 10, marginBottom: 8 }}",
         "time": None
     }
 }
