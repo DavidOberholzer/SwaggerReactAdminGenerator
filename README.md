@@ -209,7 +209,9 @@ however note that if the format is a supported component, it will overwrite the 
 Also note the presence of `enum` in a property will change the component. 
 The following types/formats have supported React Admin components and are shown in the table below.
 
-*NOTE: date-time formats are not supported as of yet. (Working on it)*
+*NOTE: date-time inputs are custom and require the following NPM packages:*
+* "material-ui-pickers": "^1.0.0-rc.14"
+* "date-fns": "2.0.0-alpha.16" (exact version!)
 
 | Type/Format     | Field Component  | Input Component  |
 | ----------------| -----------------| -----------------|
@@ -217,7 +219,7 @@ The following types/formats have supported React Admin components and are shown 
 | integer         | NumberField      | NumberInput      |
 | boolean         | BooleanField     | BooleanInput     |
 | date            | DateField        | DateInput        |
-| date-time       | DateField        | DateInput        |
+| date-time       | DateField        | DateTimeInput    |
 | enum            | SelectField      | SelectInput      |
 | object*         | ObjectField*     | LongTextInput*   |
 | array           | TextField        | None             |
@@ -225,9 +227,9 @@ The following types/formats have supported React Admin components and are shown 
 * Object types use a Custom ObjectField included in the generation of the React Admin Client. 
 For the input of an object, a LongTextInput is utilized with `parse` and `format` props that handle the sending and presentation of the field data.
 
-### Foriegn Key relationships
+### Foreign Key relationships
 
-Foriegn key relationships can be setup in the definition quite easily. In order for a field to be picked up as a foreign key either of the following must be present.
+Foreign key relationships can be setup in the definition quite easily. In order for a field to be picked up as a foreign key either of the following must be present.
 
 1. The field name is suffixed by `_id`.
 2. There is an additional field for related information named `x-related-info`
@@ -441,7 +443,18 @@ If you would like a filter to be a dropdown selection of a related model rather 
 
 *NOTE* If you would like to not include a parameter as a filter, add the following to the parameter definition:
 
-`x-admin-exlude: true`
+`"x-admin-exlude": true`
+
+### Date range filters
+
+There is a custom DateRangeInput component included in the generation. In order to use it in a filter provide the following extra info on the desired `query` parameter:
+
+```
+"x-filter": {
+  "format": "date"/"date-time",
+  "range": true/false
+}
+```
 
 ## Permissions
 

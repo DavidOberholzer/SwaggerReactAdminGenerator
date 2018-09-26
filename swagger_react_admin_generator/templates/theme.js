@@ -16,7 +16,7 @@ export const theme = createMuiTheme({
 });
 
 export const styles = {
-    dateTimeField: {
+    dateTimeInput: {
         marginTop: 15,
         marginBottom: 15
     }

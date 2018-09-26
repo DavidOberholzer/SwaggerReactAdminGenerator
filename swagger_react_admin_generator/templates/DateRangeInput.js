@@ -34,19 +34,24 @@ class DateRangeInput extends Component {
     }
 
     render() {
-        const { source } = this.props;
+        const { label, source, style } = this.props;
+        const props = {
+            customStyles: style
+        };
         return (
             <span>
                 <Field
                     name={`${source}.from`}
                     component={this.component}
-                    label="From"
+                    props={props}
+                    label={`From ${label}`}
                     onChange={this.handleFromOnChange}
                 />
                 <Field
                     name={`${source}.to`}
                     component={this.component}
-                    label="To"
+                    props={props}
+                    label={`To ${label}`}
                     onChange={this.handleToOnChange}
                 />
             </span>
