@@ -14,4 +14,12 @@ export const theme = createMuiTheme({
         error: red
     }
 });
+
+export const styles = {
+    dateTimeField: {
+        marginTop: 15,
+        marginBottom: 15
+    }
+};
+
 /** End of Generated Code **/

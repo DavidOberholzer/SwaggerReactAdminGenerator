@@ -35,6 +35,16 @@ parameters:
     minLength: 3
     maxLength: 10
 
+  optional_last_eaten_range:
+    description: An optional last_eaten range filter
+    in: query
+    name: last_eaten
+    required: false
+    type: string
+    x-filter:
+      format: date-time
+      range: true
+
   optional_user_id:
     description: An Optional Filter by user_id.
     in: query
@@ -94,6 +104,7 @@ paths:
       parameters:
       - $ref: "#/parameters/optional_pet_id"
       - $ref: "#/parameters/optional_pet_name"
+      - $ref: "#/parameters/optional_last_eaten_range"
       - name: pet_ids
         description: An optional list of pet ids
         in: query

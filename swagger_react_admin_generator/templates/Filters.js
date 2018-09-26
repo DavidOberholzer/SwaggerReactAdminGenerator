@@ -11,6 +11,11 @@ import {
     {% endfor %}
     Filter
 } from 'react-admin';
+
+{% for _import in filters.custom_imports %}
+import {{ _import.name }} from '{{ _import.directory }}';
+{% endfor %}
+
 {% for filter in filters.filters %}
 {% if not filter.relation %}
 {% if filter.array %}

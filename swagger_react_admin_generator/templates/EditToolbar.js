@@ -24,7 +24,7 @@ const {{ resource.title }}EditToolbar = props => (
         {% if resource.methods.remove %}
         {% if permissions %}
         {PermissionsStore.getResourcePermission('{{ name }}', 'remove') && (
-            <DeleteButton />
+            <DeleteButton resource="{{ name }}" record={props.record} />
         )}
         {% else %}
         <DeleteButton />

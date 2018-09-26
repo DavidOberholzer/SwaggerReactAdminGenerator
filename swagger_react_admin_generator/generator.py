@@ -47,7 +47,6 @@ INPUT_COMPONENT_MAPPING = {
     "array": "TextInput",
     "boolean": "BooleanInput",
     "date": "DateInput",
-    "date-time": "DateInput",
     "enum": "SelectInput",
     "integer": "NumberInput",
     "many": "ReferenceManyField",
@@ -77,17 +76,36 @@ SUPPORTED_COMPONENTS = {
 
 ADDITIONAL_FILES = {
     "root": ["theme.js", "MyLayout.js", "customRoutes.js"],
-    "fields": ["EmptyField.js", "ObjectField.js"]
+    "fields": ["EmptyField.js", "ObjectField.js"],
+    "inputs": ["DateRangeInput.js", "DateTimeInput.js"]
 }
 
 PERMISSION_ADDITIONAL_FILES = {
     "pages": ["NoPermissions.js"]
 }
 
+CUSTOM_PROPS = {
+    "date-time-range": {
+        "time": None
+    }
+}
+
 CUSTOM_IMPORTS = {
     "object": {
         "name": "ObjectField",
         "directory": "../fields/ObjectField"
+    },
+    "date-range": {
+        "name": "DateRangeInput",
+        "directory": "../inputs/DateRangeInput"
+    },
+    "date-time": {
+        "name": "DateTimeInput",
+        "directory": "../inputs/DateTimeInput"
+    },
+    "date-time-range": {
+        "name": "DateRangeInput",
+        "directory": "../inputs/DateRangeInput"
     },
     "empty": {
         "name": "EmptyField",
@@ -320,7 +338,7 @@ class Generator(object):
                 if not related:
                     # Check if format overrides the component.
                     _format = _property.get("format", None)
-                    if _format in mapping:
+                    if _format in mapping or _format in CUSTOM_IMPORTS:
                         _type = _format
                     # Check if a custom component exists for this _type
                     if _type in CUSTOM_IMPORTS and _type not in mapping:
@@ -392,12 +410,14 @@ class Generator(object):
         """
         filters = []
         filter_imports = set([])
+        custom_imports = set([])
         for parameter in self._currentIO.get("parameters", []):
             param = self._get_parameter_from_ref(parameter)
+            x_filter = param.get("x-filter", None)
 
             valid = all([
                 param["in"] == "query",
-                param["type"] in INPUT_COMPONENT_MAPPING,
+                param["type"] in INPUT_COMPONENT_MAPPING or x_filter,
                 "x-admin-exclude" not in param
             ])
 
@@ -417,8 +437,20 @@ class Generator(object):
                     filter_imports.add("SelectInput")
 
                 # Add filter component
-                component = INPUT_COMPONENT_MAPPING[_type]
-                filter_imports.add(component)
+                if x_filter:
+                    _type = x_filter["format"]
+                    if x_filter.get("range", False):
+                        _type = f"{_type}-range"
+
+                if _type in INPUT_COMPONENT_MAPPING:
+                    component = INPUT_COMPONENT_MAPPING[_type]
+                    filter_imports.add(component)
+                else:
+                    component = CUSTOM_IMPORTS[_type]["name"]
+                    custom_imports.add(_type)
+
+                # Load any custom props
+                props = CUSTOM_PROPS.get(_type, [])
 
                 # Load Min and Max values of filter.
                 _min = param.get("minLength", None)
@@ -440,13 +472,17 @@ class Generator(object):
                     "label": label,
                     "title": label.replace(" ", ""),
                     "component": component,
+                    "props": props,
                     "relation": relation,
                     "array": array_validation
                 })
 
         self._resources[resource]["filters"] = {
             "filters": list(filters),
-            "imports": list(filter_imports)
+            "imports": list(filter_imports),
+            "custom_imports": [
+                CUSTOM_IMPORTS[_import] for _import in custom_imports
+            ]
         }
 
     def _build_in_lines(self, resource: str, singular: str, method: str):
