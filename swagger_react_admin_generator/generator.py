@@ -75,7 +75,7 @@ SUPPORTED_COMPONENTS = {
 }
 
 ADDITIONAL_FILES = {
-    "root": ["theme.js", "MyLayout.js", "customRoutes.js"],
+    "root": ["theme.js", "MyLayout.js", "customRoutes.js", "utils.js"],
     "fields": ["EmptyField.js", "ObjectField.js"],
     "inputs": ["DateRangeInput.js", "DateTimeInput.js"]
 }

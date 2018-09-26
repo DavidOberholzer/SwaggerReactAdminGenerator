@@ -12,6 +12,7 @@ import CalendarIcon from '@material-ui/icons/Today';
 import TimeIcon from '@material-ui/icons/Schedule';
 import { Field } from 'redux-form';
 
+import { titleCase } from '../utils';
 import { styles } from '../theme';
 
 export const renderDateTimeField = ({ input, label, customStyles }) => (
@@ -32,7 +33,11 @@ export const renderDateTimeField = ({ input, label, customStyles }) => (
 
 const DateTimeInput = ({ label, source }) => (
     <span>
-        <Field name={source} component={renderDateTimeField} label={label || source} />
+        <Field
+            name={source}
+            component={renderDateTimeField}
+            label={label || titleCase(source.replace('_', ' '))}
+        />
     </span>
 );
 
