@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.0.3
+-----
+* Missing templates added in MANIFEST.in file
+
 0.0.2
 -----
 * Updated setup to have a proper package name.
