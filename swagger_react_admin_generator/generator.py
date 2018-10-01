@@ -129,7 +129,7 @@ def render_to_string(filename: str, context: dict):
     template_directory = "./swagger_react_admin_generator/templates"
     loaders = [jinja2.FileSystemLoader(template_directory)]
     try:
-        import swagger_aor_generator
+        import swagger_react_admin_generator
         loaders.append(
             jinja2.PackageLoader("swagger_react_admin_generator", "templates")
         )

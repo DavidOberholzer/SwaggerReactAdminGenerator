@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.0.4
+-----
+* First working package version.
+* Jinja2 package loader import fixed.
+
 0.0.3
 -----
 * Missing templates added in MANIFEST.in file
