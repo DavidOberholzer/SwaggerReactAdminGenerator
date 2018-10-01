@@ -29,7 +29,7 @@ setup(
     tests_require=[],
     classifiers=[
         "Programming Language :: Python",
-        "License :: MIT License",
+        "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
