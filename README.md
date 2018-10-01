@@ -7,7 +7,7 @@ The purpose of this tool is to generate all the CRUD, Filter and base elements o
 
 ## Installation
 
-`pip install Swagger-React-Admin-Generator`
+`pip install swagger-react-admin-generator`
 
 ## Swagger Specification Configuration
 Here is a configuration of paths for a single model to be implemented on the React Admin interface.

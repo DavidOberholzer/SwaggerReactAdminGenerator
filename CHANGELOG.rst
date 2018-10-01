@@ -1,7 +1,11 @@
 Changelog
 =========
 
-0.1.0
+0.0.2
+-----
+* Updated setup to have a proper package name.
+
+0.0.1
 -----
 * Generator added using jinja template language.
 * Templates added for:

@@ -2,8 +2,8 @@ from distutils.core import setup
 from setuptools import find_packages
 
 setup(
-    name="Swagger React Admin Generator",
-    version="0.0.1",
+    name="swagger-react-admin-generator",
+    version="0.0.2",
     description="Python React Admin Generator using a Swagger Specification.",
     long_description="""
     A python package created to generate a base React Admin client using a predefined swagger specification.
