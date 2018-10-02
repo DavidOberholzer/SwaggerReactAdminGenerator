@@ -14,7 +14,7 @@ class catchAll extends Component {
     render() {
         return localStorage.getItem('id_token') ? (
             {% if permissions %}
-            localStorage.getItem('permissions') ? (
+            localStorage.getItem('{% if permissions_store %}permissions{% else %}role{% endif %}') ? (
                 <NotFound />
             ) : (
                 <NoPermissions />

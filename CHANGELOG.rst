@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.1.0
+-----
+* Normal permissions with role generation added with `--permissions` flag set.
+* Optional use of `PermissionsStore` added with flag `--permissions_store`.
+* Split templates to ones with `permissions` and ones without.
+* Util function added for getting if role is permitted in normal permission generation.
+* Added auth provider as per React Admin docs.
+* Added `get_and_create_directory` function to class to reduce code.
+* Updated Documentation.
+
 0.0.4
 -----
 * First working package version.
