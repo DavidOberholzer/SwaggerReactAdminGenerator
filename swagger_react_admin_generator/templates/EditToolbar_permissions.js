@@ -5,6 +5,13 @@
 import React from 'react';
 import { {% if resource.methods.remove %}DeleteButton, {% endif %}SaveButton, Toolbar } from 'react-admin';
 
+{% if resource.methods.remove %}
+{% if permissions_store %}
+import PermissionsStore from '../auth/PermissionsStore';
+{% else %}
+import { permitted } from '../utils';
+{% endif %}
+{% endif %}
 
 const {{ resource.title }}EditToolbar = props => (
     <Toolbar {...props}>
@@ -19,7 +26,9 @@ const {{ resource.title }}EditToolbar = props => (
             variant="flat"
         />
         {% if resource.methods.remove %}
-        <DeleteButton />
+        { {% if permissions_store %}PermissionsStore.getResourcePermission('{{ name }}', 'remove'){% else %}permitted({{ resource.methods.remove.permissions }}){% endif %} && (
+            <DeleteButton resource="{{ name }}" record={props.record} />
+        )}
         {% endif %}
     </Toolbar>
 );

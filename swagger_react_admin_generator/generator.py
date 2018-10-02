@@ -75,7 +75,7 @@ SUPPORTED_COMPONENTS = {
 }
 
 ADDITIONAL_FILES = {
-    "root": ["theme.js", "MyLayout.js", "customRoutes.js", "utils.js"],
+    "root": ["theme.js", "MyLayout.js", "customRoutes.js"],
     "fields": ["EmptyField.js", "ObjectField.js"],
     "inputs": ["DateRangeInput.js", "DateTimeInput.js"]
 }
@@ -146,7 +146,7 @@ def render_to_string(filename: str, context: dict):
 class Generator(object):
 
     def __init__(self, verbose: bool, output_dir=DEFAULT_OUTPUT_DIR,
-                 module_name=DEFAULT_MODULE, permissions=False):
+                 module_name=DEFAULT_MODULE, permissions=False, permissions_store=False):
         self.parser = None
         self._resources = None
         self.verbose = verbose
@@ -154,7 +154,9 @@ class Generator(object):
         self.module_name = module_name
         self._currentIO = None
         self.page_details = None
-        self.permissions = permissions
+        self.permissions = permissions or permissions_store
+        self.permissions_store = permissions_store
+        self._directories = set([])
 
     def load_specification(self, specification_path: str, spec_format: str):
         """
@@ -228,6 +230,20 @@ class Generator(object):
                 )
         return None
 
+    def _get_related_field_permissions(self, field_name_resource: str):
+        """
+        Get the list permissions of a given related field resource.
+        :param field_name_resource: The name of the related field resource.
+        :return: The permissions found.
+        """
+        permissions = []
+        list_path = self.parser.specification["paths"].get(f"/{field_name_resource}", None)
+        if list_path:
+            operation = list_path.get("get", None)
+            if operation:
+                permissions = operation.get("x-permissions", [])
+        return permissions
+
     def _build_related_field(self, resource: str, name: str, _field: dict, _property: dict):
         """
         Build out a related field
@@ -268,6 +284,10 @@ class Generator(object):
                     else:
                         reference = words.plural(model.replace("_", ""))
                     _field["reference"] = reference
+                    # Add permissions of reference if using normal permission generation scheme.
+                    if self.permissions and not self.permissions_store:
+                        _field["permissions"] = self._get_related_field_permissions(reference)
+
                     # Get the option text to be used in the Select input from the
                     # label field, else guess it from the current property name.
                     guess = name.rsplit("_", 1)[1]
@@ -513,13 +533,17 @@ class Generator(object):
             # If a custom base path has been given, use that as reference.
             ref = in_line.get("rest_resource_name", None)
             reference = ref or words.plural(model.replace("_", ""))
+            permissions = []
+            if self.permissions and not self.permissions_store:
+                permissions = self._get_related_field_permissions(reference)
 
             fields = in_line.get("fields", None)
             many_field = {
                 "label": label or model.replace("_", " ").title(),
                 "reference": reference,
                 "target": in_line["key"],
-                "component": mapping["many"]
+                "component": mapping["many"],
+                "permissions": permissions
             }
 
             self._resources[resource]["imports"].add(many_field["component"])
@@ -683,6 +707,18 @@ class Generator(object):
                     if self.verbose:
                         print(data)
 
+    def get_and_create_directory(self, _dir_name: str):
+        """
+        Gets the full directory and creates it if it does not exist.
+        :param _dir_name: The sub directory to get and create if needed.
+        :return: string of the full directory
+        """
+        full_dir = f"{self.output_dir}/{_dir_name}"
+        if _dir_name not in self._directories:
+            os.makedirs(full_dir)
+            self._directories.add(_dir_name)
+        return full_dir
+
     def admin_generation(self):
         click.secho("Generating main JS component file...", fg="blue")
         self.create_and_generate_file(
@@ -692,8 +728,10 @@ class Generator(object):
                 "title": self.module_name,
                 "resources": self._resources,
                 "permissions": self.permissions,
+                "permissions_store": self.permissions_store,
                 "supported_components": SUPPORTED_COMPONENTS.values()
-            }
+            },
+            source="ReactAdmin_permissions" if self.permissions else "ReactAdmin"
         )
         click.secho("Generating menu...", fg="blue")
         self.create_and_generate_file(
@@ -701,6 +739,16 @@ class Generator(object):
             filename="Menu",
             context={
                 "resources": self._resources
+            }
+        )
+        click.secho("Generation auth provider...", fg="blue")
+        auth_dir = self.get_and_create_directory("auth")
+        self.create_and_generate_file(
+            _dir=auth_dir,
+            filename="authProvider",
+            context={
+                "permissions": self.permissions,
+                "permissions_store": self.permissions_store
             }
         )
         click.secho("Generating data provider...", fg="blue")
@@ -716,14 +764,22 @@ class Generator(object):
             _dir=self.output_dir,
             filename="catchAll",
             context={
-                "permissions": self.permissions
+                "permissions": self.permissions,
+                "permissions_store": self.permissions_store
+            }
+        )
+        click.secho("Generating utils file...", fg="blue")
+        self.create_and_generate_file(
+            _dir=self.output_dir,
+            filename="utils",
+            context={
+                "permissions": self.permissions,
+                "permissions_store": self.permissions_store
             }
         )
 
         click.secho("Generating resource component files...", fg="blue")
-        resource_dir = self.output_dir + "/resources"
-        if not os.path.exists(resource_dir):
-            os.makedirs(resource_dir)
+        resource_dir = self.get_and_create_directory("resources")
         for name, resource in self._resources.items():
             title = resource.get("title", None)
             if title:
@@ -736,13 +792,11 @@ class Generator(object):
                         "permissions": self.permissions,
                         "supported_components": SUPPORTED_COMPONENTS.values()
                     },
-                    source="Resource"
+                    source="Resource_permissions" if self.permissions else "Resource"
                 )
 
         click.secho("Generating custom edit toolbar component files...", fg="blue")
-        action_dir = self.output_dir + "/customActions"
-        if not os.path.exists(action_dir):
-            os.makedirs(action_dir)
+        action_dir = self.get_and_create_directory("customActions")
         for name, resource in self._resources.items():
             title = resource.get("title", None)
             if title:
@@ -756,13 +810,11 @@ class Generator(object):
                             "resource": resource,
                             "permissions": self.permissions
                         },
-                        source=f"EditToolbar"
+                        source="EditToolbar_permissions" if self.permissions else "EditToolbar"
                     )
 
         click.secho("Generating Filter files for resources...", fg="blue")
-        filter_dir = self.output_dir + "/filters"
-        if not os.path.exists(filter_dir):
-            os.makedirs(filter_dir)
+        filter_dir = self.get_and_create_directory("filters")
         for name, resource in self._resources.items():
             if resource.get("filters", None) is not None:
                 title = resource.get("title", None)
@@ -779,19 +831,18 @@ class Generator(object):
                     )
 
         if self.permissions:
-            click.secho("Generating Permissions Store...", fg="blue")
-            auth_dir = self.output_dir + "/auth"
-            if not os.path.exists(auth_dir):
-                os.makedirs(auth_dir)
-            self.create_and_generate_file(
-                _dir=auth_dir,
-                filename="PermissionsStore",
-                context={
-                    "resources": self._resources,
-                    "supported_components": SUPPORTED_COMPONENTS.values()
-                }
-            )
             self.create_additional_files(PERMISSION_ADDITIONAL_FILES)
+            if self.permissions_store:
+                click.secho("Generating Permissions Store...", fg="blue")
+                auth_dir = self.get_and_create_directory("auth")
+                self.create_and_generate_file(
+                    _dir=auth_dir,
+                    filename="PermissionsStore",
+                    context={
+                        "resources": self._resources,
+                        "supported_components": SUPPORTED_COMPONENTS.values()
+                    }
+                )
 
         self.create_additional_files(ADDITIONAL_FILES)
 
@@ -805,16 +856,18 @@ class Generator(object):
               help="The name of the module where the generated code will be "
                    "used, e.g. myproject.some_application")
 @click.option("--permissions/--no-permissions", default=False)
+@click.option("--permissions-store/--no-permissions-store", default=False)
 def main(specification_path: str, spec_format: str,
          verbose: bool, output_dir: str,
-         module_name: str, permissions: bool):
+         module_name: str, permissions: bool, permissions_store: bool):
 
     # Initialise Generator
     generator = Generator(
         verbose=verbose,
         output_dir=output_dir,
         module_name=module_name,
-        permissions=permissions
+        permissions=permissions,
+        permissions_store=permissions_store
     )
 
     try:
