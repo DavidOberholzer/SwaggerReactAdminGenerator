@@ -7,7 +7,24 @@ The purpose of this tool is to generate all the CRUD, Filter and base elements o
 
 ## Installation
 
+In your virtual environment, pip install the package.
+
 `pip install swagger-react-admin-generator`
+
+Then to use the generator run the following in your project directory:
+
+```
+./ve/bin/python ./ve/lib/python{python_version}/site-packages/swagger_react_admin_generator/generator.py {swagger_specification_location} --output-dir=output_dir --module-name="Title"
+```
+
+The following optional flags are available:
+
+* --spec-format: The specification format (JSON/YAML). Inferred from extension if not given.
+* --verbose: A verbose print out during generation.
+* --output_dir: The output directory for generation.
+* --module-name: The title of your admin module.
+* --permissions: Include permission generation scheme.
+* --permissions-store: Include permission generation scheme with PermissionsStore singleton scheme (explained below).
 
 ## Swagger Specification Configuration
 Here is a configuration of paths for a single model to be implemented on the React Admin interface.
@@ -458,13 +475,35 @@ There is a custom DateRangeInput component included in the generation. In order 
 
 ## Permissions
 
-You can have a permissions setup on your React Admin generated code. For this you can set the flag `--permissions` when running the generator. To handle permissions in your swagger specification, add a `x-permissions` array to each one of the `list`, `create`, `update` and `delete` methods specified above in your specifcation at the `operationId` level. An example is shown below:
+By setting the flag `--permissions` one can have permissions on each view/action (list, show, edit, create, remove) throughout the admin interface.
+This method follows the paradigm explained on https://marmelab.com/react-admin/Authorization.html. 
+
+One can specify a list of roles required to perform a certain action on a resource endpoint as such:
 
 ```
 ...
 "operationId": "pet_list",
 "x-permissions": [
-  "pet:read"
+  "admin",
+  "content_editor"
+],
+...
+```
+
+With this setup, a utility function `permitted` is included. This function is given the roles declared for that resource action and checks if the current user role is within that list. This will decide whether or not to render that component.
+
+### Permissions Store
+
+This is an option for multiple resource permission handling, ie. storing what resource actions (list, edit, create, remove) the user has (instead of just a single role) and then using this store to control the React Admin view.
+
+Instead of the permitted check you can have a PermissionStore setup on your React Admin generated code. For this you can set the flag `--permissions-store` when running the generator. To handle permissions in your swagger specification, add a `x-permissions` array to each one of the `list`, `create`, `update` and `delete` methods specified above in your specification at the `operationId` level. An example is shown below:
+
+```
+...
+"operationId": "pet_list",
+"x-permissions": [
+  "pet:read",
+  ...
 ],
 ...
 ```
@@ -496,13 +535,11 @@ If the user has the permissions `["owner:read"]` then the above flag will be `fa
 
 These permissions will need to be loaded prior to the Admin being rendered. Therefore on login, if you would like to use the PermissionsStore, please call `loadPermissions` with a list of the permissions you want loaded prior to rendering the Main Admin component.
 
-PLEASE feel free to replace the permissions setup with your own, this setup was based on a project that this tool was built for and can be helpful but only if you would like it to be there.
-
-*NOTE*: If an endpoint has no permissions listed, it is assumed that all users have permission to perform that action. 
+*NOTE*: If an endpoint has no permissions listed, it is assumed that all users have permission to perform that action for BOTH permission setups. 
 
 ## authProvider
 
-A basic auth provider setup is not included.
+A basic auth provider setup is included from https://marmelab.com/react-admin/Authentication.html and https://marmelab.com/react-admin/Authorization.html and is generic.
 
 ## dataProvider
 
@@ -534,4 +571,3 @@ Make sure you have installed the npm package `prettier`.
 
 * Fix up templates folder/file organization, thus resulting in some minor code changes. (Neatening up).
 * Add more range based filter types (like integer/number range).
-* Add basic role setup as per React admin documentation https://marmelab.com/react-admin/Authorization.html

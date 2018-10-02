@@ -22,5 +22,9 @@ demo-permissions: clean-demo
 	mkdir demo
 	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions
 
+demo-permissions-store: clean-demo
+	mkdir demo
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions-store
+
 clean-demo:
 	rm -rf demo
