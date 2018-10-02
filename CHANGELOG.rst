@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+0.1.0
+-----
 * Normal permissions with role generation added with `--permissions` flag set.
 * Optional use of `PermissionsStore` added with flag `--permissions_store`.
 * Split templates to ones with `permissions` and ones without.
