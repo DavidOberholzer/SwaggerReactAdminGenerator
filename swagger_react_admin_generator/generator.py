@@ -790,6 +790,7 @@ class Generator(object):
                         "title": title,
                         "resource": resource,
                         "permissions": self.permissions,
+                        "permissions_store": self.permissions_store,
                         "supported_components": SUPPORTED_COMPONENTS.values()
                     },
                     source="Resource_permissions" if self.permissions else "Resource"
@@ -808,7 +809,8 @@ class Generator(object):
                         context={
                             "name": name,
                             "resource": resource,
-                            "permissions": self.permissions
+                            "permissions": self.permissions,
+                            "permissions_store": self.permissions_store
                         },
                         source="EditToolbar_permissions" if self.permissions else "EditToolbar"
                     )

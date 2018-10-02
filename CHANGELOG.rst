@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.1
+-----
+* Added missing context of permissions store setting on resource and edit toolbar generation.
+
 0.1.0
 -----
 * Normal permissions with role generation added with `--permissions` flag set.
