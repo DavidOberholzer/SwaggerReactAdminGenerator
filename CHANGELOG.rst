@@ -1,6 +1,11 @@
 Changelog
 =========
 
+next
+----
+* Ability to omit the export button added as a flag.
+* List actions templates and generation for export button removal.
+
 0.1.3
 -----
 * Fixed permissions imports to be correct based on which permission generation scheme chosen.

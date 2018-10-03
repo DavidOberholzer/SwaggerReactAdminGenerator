@@ -24,6 +24,9 @@ import {{ _import.name }} from '{{ _import.directory }}';
 {% if resource.methods.edit %}
 import {{ title }}EditToolbar from '../customActions/{{ title }}EditToolbar';
 {% endif %}
+{% if omit_exporter %}
+import {{ title }}ListActions from '../customActions/{{ title }}ListActions';
+{% endif %}
 
 {% if resource.filters %}
 import {{ title }}Filter from '../filters/{{ title }}Filter';
@@ -78,7 +81,7 @@ const choice{{ method|title }}{{ attribute.source|title }} = [
 {% for component, entries in resource.methods.items() %}
 {% if component in supported_components and (entries.fields|length > 0 or entries.inlines) %}
 export const {{ title }}{{ component|title }} = props => (
-    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component == "list" %}{% if resource.filters %} filters={<{{ title }}Filter />}{% endif %} bulkActionButtons={false}{% endif %}>
+    <{{ component|title }} {...props} title="{{ title }} {{ component|title }}"{% if component == "list" %}{% if resource.filters %} filters={<{{ title }}Filter />}{% endif %}{% if omit_exporter %} actions={<{{ title }}ListActions />}{% endif %} bulkActionButtons={false}{% endif %}>
         {% if entries.responsive_fields %}
         <Responsive
             small={

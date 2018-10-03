@@ -23,6 +23,7 @@ The following optional flags are available:
 * --verbose: A verbose print out during generation.
 * --output_dir: The output directory for generation.
 * --module-name: The title of your admin module.
+* --omit-exporter: If you would like the export button to not appear on list views.
 * --permissions: Include permission generation scheme.
 * --permissions-store: Include permission generation scheme with PermissionsStore singleton scheme (explained below).
 
@@ -536,6 +537,11 @@ If the user has the permissions `["owner:read"]` then the above flag will be `fa
 These permissions will need to be loaded prior to the Admin being rendered. Therefore on login, if you would like to use the PermissionsStore, please call `loadPermissions` with a list of the permissions you want loaded prior to rendering the Main Admin component.
 
 *NOTE*: If an endpoint has no permissions listed, it is assumed that all users have permission to perform that action for BOTH permission setups. 
+
+## Omit Exporter Button
+
+With the `--omit-exporter` flag, the generator will create `ListAction.js` files for each resource WITHOUT the export button present.
+This will prevent the rendering of an export button.
 
 ## authProvider
 

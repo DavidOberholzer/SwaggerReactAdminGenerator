@@ -18,13 +18,25 @@ demo: clean-demo
 	mkdir demo
 	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin"
 
+demo-no-exporter: clean-demo
+	mkdir demo
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --omit-exporter
+
 demo-permissions: clean-demo
 	mkdir demo
 	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions
 
+demo-permissions-no-exporter: clean-demo
+	mkdir demo
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions --omit-exporter
+
 demo-permissions-store: clean-demo
 	mkdir demo
 	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions-store
+
+demo-permissions-store-no-exporter: clean-demo
+	mkdir demo
+	$(PYTHON) swagger_react_admin_generator/generator.py tests/resources/petstore.yml --output-dir=demo --module-name="A Pet Admin" --permissions-store --omit-exporter
 
 clean-demo:
 	rm -rf demo
