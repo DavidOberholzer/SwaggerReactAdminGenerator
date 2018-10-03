@@ -113,6 +113,10 @@ CUSTOM_IMPORTS = {
         "directory": "../fields/EmptyField"
     },
     "permissions": {
+        "name": "{ permitted }",
+        "directory": "../utils"
+    },
+    "permissions_store": {
         "name": "PermissionsStore",
         "directory": "../auth/PermissionsStore"
     }
@@ -156,6 +160,8 @@ class Generator(object):
         self.page_details = None
         self.permissions = permissions or permissions_store
         self.permissions_store = permissions_store
+        self.permissions_import = "permissions_store" \
+            if permissions_store else "permissions"
         self._directories = set([])
 
     def load_specification(self, specification_path: str, spec_format: str):
@@ -269,7 +275,7 @@ class Generator(object):
                     if self.permissions and not has_permissions:
                         self._resources[resource]["has_permission_fields"] = True
                         self._resources[resource]["custom_imports"].update(
-                            ["empty", "permissions"]
+                            ["empty", self.permissions_import]
                         )
                     related = True
                     # If model didn't even exist then attempt to guess the model
@@ -525,7 +531,7 @@ class Generator(object):
             if self.permissions and not has_permissions:
                 self._resources[resource]["has_permission_fields"] = True
                 self._resources[resource]["custom_imports"].update(
-                    ["empty", "permissions"]
+                    ["empty", self.permissions_import]
                 )
             model = in_line["model"]
             label = in_line.get("label", None)
@@ -616,8 +622,11 @@ class Generator(object):
                         )
                         self._resources[plural]["title"] = title
                     elif op in ["create", "update"]:
+                        if op == "update":
+                            self._resources[plural]["custom_imports"].add(self.permissions_import)
                         self._current_definition, title = self._get_parameter_definition()
                     elif op == "delete":
+                        self._resources[plural]["custom_imports"].add(self.permissions_import)
                         self._current_definition = None
                         if self.permissions:
                             permissions = io.get("x-permissions", [])
