@@ -788,6 +788,7 @@ class Generator(object):
                     filename=title,
                     context={
                         "title": title,
+                        "name": name,
                         "resource": resource,
                         "permissions": self.permissions,
                         "permissions_store": self.permissions_store,
