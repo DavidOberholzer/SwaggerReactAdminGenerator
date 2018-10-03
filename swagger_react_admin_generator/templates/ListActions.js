@@ -28,4 +28,6 @@ const {{ resource.title }}ListActions = ({
     </CardActions>
 );
 
+export default {{ resource.title }}ListActions;
+
 /** End of Generated Code **/

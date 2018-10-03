@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.5
+-----
+* Missing export default in list actions.
+
 0.1.4
 -----
 * Ability to omit the export button added as a flag.
