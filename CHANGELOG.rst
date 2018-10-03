@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.1.2
+-----
+* Added Missing name context for resource files.
+
 0.1.1
 -----
 * Added missing context of permissions store setting on resource and edit toolbar generation.
