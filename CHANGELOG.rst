@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+0.1.3
+-----
 * Fixed permissions imports to be correct based on which permission generation scheme chosen.
 
 0.1.2
