@@ -29,10 +29,6 @@ import {{ title }}EditToolbar from '../customActions/{{ title }}EditToolbar';
 import {{ title }}Filter from '../filters/{{ title }}Filter';
 {% endif %}
 
-{% if not permissions_store %}
-import { permitted } from '../utils';
-{% endif %}
-
 {% if resource.methods.create %}
 const validationCreate{{ title }} = values => {
     const errors = {};

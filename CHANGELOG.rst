@@ -1,6 +1,10 @@
 Changelog
 =========
 
+next
+----
+* Fixed permissions imports to be correct based on which permission generation scheme chosen.
+
 0.1.2
 -----
 * Added Missing name context for resource files.
