@@ -150,7 +150,8 @@ def render_to_string(filename: str, context: dict):
 class Generator(object):
 
     def __init__(self, verbose: bool, output_dir=DEFAULT_OUTPUT_DIR,
-                 module_name=DEFAULT_MODULE, permissions=False, permissions_store=False):
+                 module_name=DEFAULT_MODULE, omit_exporter=False,
+                 permissions=False, permissions_store=False):
         self.parser = None
         self._resources = None
         self.verbose = verbose
@@ -158,6 +159,7 @@ class Generator(object):
         self.module_name = module_name
         self._currentIO = None
         self.page_details = None
+        self.omit_exporter = omit_exporter
         self.permissions = permissions or permissions_store
         self.permissions_store = permissions_store
         self.permissions_import = "permissions_store" \
@@ -799,6 +801,7 @@ class Generator(object):
                         "title": title,
                         "name": name,
                         "resource": resource,
+                        "omit_exporter": self.omit_exporter,
                         "permissions": self.permissions,
                         "permissions_store": self.permissions_store,
                         "supported_components": SUPPORTED_COMPONENTS.values()
@@ -823,6 +826,24 @@ class Generator(object):
                             "permissions_store": self.permissions_store
                         },
                         source="EditToolbar_permissions" if self.permissions else "EditToolbar"
+                    )
+
+        if self.omit_exporter:
+            click.secho("Generating List Action files...", fg="blue")
+            for name, resource in self._resources.items():
+                title = resource.get("title", None)
+                if title:
+                    action_file = f"{title}ListActions"
+                    self.create_and_generate_file(
+                        _dir=action_dir,
+                        filename=action_file,
+                        context={
+                            "name": name,
+                            "resource": resource,
+                            "permissions": self.permissions,
+                            "permissions_store": self.permissions_store
+                        },
+                        source="ListActions_permissions" if self.permissions else "ListActions"
                     )
 
         click.secho("Generating Filter files for resources...", fg="blue")
@@ -867,17 +888,19 @@ class Generator(object):
 @click.option("--module-name", type=str, default=DEFAULT_MODULE,
               help="The name of the module where the generated code will be "
                    "used, e.g. myproject.some_application")
+@click.option("--omit-exporter/--exporter", default=False)
 @click.option("--permissions/--no-permissions", default=False)
 @click.option("--permissions-store/--no-permissions-store", default=False)
 def main(specification_path: str, spec_format: str,
-         verbose: bool, output_dir: str,
-         module_name: str, permissions: bool, permissions_store: bool):
+         verbose: bool, output_dir: str, module_name: str,
+         omit_exporter: bool, permissions: bool, permissions_store: bool):
 
     # Initialise Generator
     generator = Generator(
         verbose=verbose,
         output_dir=output_dir,
         module_name=module_name,
+        omit_exporter=omit_exporter,
         permissions=permissions,
         permissions_store=permissions_store
     )
