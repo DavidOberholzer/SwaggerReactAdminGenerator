@@ -1,8 +1,8 @@
 Changelog
 =========
 
-next
-----
+0.1.4
+-----
 * Ability to omit the export button added as a flag.
 * List actions templates and generation for export button removal.
 
