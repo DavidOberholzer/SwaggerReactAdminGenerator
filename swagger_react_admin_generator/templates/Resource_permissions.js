@@ -124,14 +124,14 @@ export const {{ title }}{{ component|title }} = props => (
                         {% for attribute in inline.fields %}
                         {% if attribute.related_component %}
                         { {% if permissions_store %}PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list'){% else %}permitted({{ entries.permissions }}){% endif %} ? (
-                            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
+                            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
                                 <{{ attribute.related_component }} source="{{ attribute.option_text }}" />
                             </{{ attribute.component }}>
                         ) : (
                             <EmptyField />
                         )}
                         {% else %}
-                        <{{ attribute.component }} source="{{ attribute.source }}"{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
+                        <{{ attribute.component }} source="{{ attribute.source }}" sortable={false}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
                         {% endif %}
                         {% endfor %}
                     </Datagrid>

@@ -1,6 +1,10 @@
 Changelog
 =========
 
+next
+----
+* Added sortable false props on all inline table fields.
+
 0.1.5
 -----
 * Missing export default in list actions.

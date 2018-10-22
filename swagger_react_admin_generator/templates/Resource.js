@@ -110,11 +110,11 @@ export const {{ title }}{{ component|title }} = props => (
                 <Datagrid>
                     {% for attribute in inline.fields %}
                     {% if attribute.related_component %}
-                    <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
+                    <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
                         <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} source="{{ attribute.option_text }}" />
                     </{{ attribute.component }}>
                     {% else %}
-                    <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}"{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
+                    <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}" sortable={false}{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
                     {% endif %}
                     {% endfor %}
                 </Datagrid>
