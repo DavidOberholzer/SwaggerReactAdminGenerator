@@ -6,7 +6,7 @@
 {% if permissions and not permissions_store %}
 // Permissions check function
 export const permitted = requiredPermissions => {
-    const role = localStorage.getItem('role'));
+    const role = localStorage.getItem('role');
     if (allowedRoles) {
         const allowedRoles = new Set(requiredPermissions);
         return allowedRoles.has(role);
