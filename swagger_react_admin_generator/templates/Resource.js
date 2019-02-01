@@ -85,7 +85,7 @@ export const {{ title }}{{ component|title }} = props => (
             {% for attribute in entries.fields %}
             {% if attribute.read_only and component == "create" %}{% else %}
             {% if attribute.related_component %}
-            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
+            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty{% if attribute.required %}={false}{% endif %}>
                 <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
             </{{ attribute.component }}>
             {% else %}
@@ -106,7 +106,7 @@ export const {{ title }}{{ component|title }} = props => (
                 <Datagrid>
                     {% for attribute in inline.fields %}
                     {% if attribute.related_component %}
-                    <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
+                    <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty{% if attribute.required %}={false}{% endif %}>
                         <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} source="{{ attribute.option_text }}" />
                     </{{ attribute.component }}>
                     {% else %}
