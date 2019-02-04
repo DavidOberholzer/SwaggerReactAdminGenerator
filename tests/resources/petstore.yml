@@ -461,8 +461,13 @@ definitions:
 
   pet_create:
     properties:
-      category:
-        $ref: "#/definitions/category"
+      category_id:
+        type: integer
+        x-related-info:
+          model: category
+          rest_resource_name: categories
+          field: id
+          label: name
       name:
         type: string
         example: doggie
@@ -492,11 +497,17 @@ definitions:
         - sold
     required:
     - name
+    - category_id
 
   pet_update:
     properties:
-      category:
-        $ref: "#/definitions/category"
+      category_id:
+        type: integer
+        x-related-info:
+          model: category
+          rest_resource_name: categories
+          field: id
+          label: name
       name:
         type: string
         example: doggie
