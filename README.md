@@ -1,6 +1,8 @@
 # Swagger React Admin Generator
 Convert Swagger specifications into a simple React Admin client.
 
+LAST TESTED REACT ADMIN VERSION <= 2.4.0
+
 ## Introduction
 This utility parses a Swagger specification and generates a simple React Admin client implementation to integration with a given data provider.
 The purpose of this tool is to generate all the CRUD, Filter and base elements of a React Admin setup with a defined swagger specification. The tool includes a basic setup for authentication and management, but those can be controlled and overwritten once the generation is done.

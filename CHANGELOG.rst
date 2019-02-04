@@ -1,6 +1,15 @@
 Changelog
 =========
 
+next
+-----
+
+0.1.7
+-----
+* Validations moved to field level rather than Form components.
+* Validation added for length/size of inputs.
+* `allowEmpty` props now dictated if field required or not.
+
 0.1.6
 -----
 * Added sortable false props on all inline table fields.
