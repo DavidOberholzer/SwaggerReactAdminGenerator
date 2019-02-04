@@ -3,6 +3,9 @@ Changelog
 
 next
 -----
+
+0.1.7
+-----
 * Validations moved to field level rather than Form components.
 * Validation added for length/size of inputs.
 * `allowEmpty` props now dictated if field required or not.
