@@ -264,7 +264,6 @@ class Generator(object):
         related = False
         if "x-related-info" in _property:
 
-
             # Check and handle related info
             related_info = _property["x-related-info"]
 
@@ -334,16 +333,36 @@ class Generator(object):
                 continue
             read_only = _property.get("readOnly", False) and _input
             _type = _property.get("type", None)
+
+            # Build field length object for strings and integer types
+            length_values = {
+                "minLength": _property.get("minLength", None),
+                "maxLength": _property.get("maxLength", None),
+                "minValue": _property.get("minimum", None),
+                "maxValue": _property.get("maximum", None)
+            } if _type in ["string", "integer"] else {}
+
+            # Load imports
+            one_value = False
+            for key, value in length_values.items():
+                if value:
+                    one_value = True
+                    _imports.add(key)
+
             _field = {
                 "source": name,
                 "type": _type,
                 "required": name in required_properties,
                 "sortable": name in sortable,
-                "read_only": read_only
+                "read_only": read_only,
+                "length_values": length_values if one_value else {}
             }
 
             if read_only:
                 _imports.add("DisabledInput")
+
+            if _field["required"]:
+                _imports.add("required")
 
             if _input:
                 mapping = INPUT_COMPONENT_MAPPING
@@ -407,7 +426,7 @@ class Generator(object):
             # Build out fields for a resource.
             _fields, _imports = self._build_fields(
                 resource=resource,
-                singular= singular,
+                singular=singular,
                 properties=properties,
                 _input=_input,
                 fields=[]

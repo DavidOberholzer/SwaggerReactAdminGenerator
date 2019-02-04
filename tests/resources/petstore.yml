@@ -415,6 +415,8 @@ definitions:
     properties:
       name:
         type: string
+        minLength: 2
+        maxLength: 20
       info:
         type: string
         format: uri
@@ -439,6 +441,8 @@ definitions:
         example: doggie
       metadata:
         type: object
+      age:
+        type: integer
       last_eaten:
         type: string
         format: date-time
@@ -457,13 +461,23 @@ definitions:
 
   pet_create:
     properties:
-      category:
-        $ref: "#/definitions/category"
+      category_id:
+        type: integer
+        x-related-info:
+          model: category
+          rest_resource_name: categories
+          field: id
+          label: name
       name:
         type: string
         example: doggie
+        minLength: 2
       metadata:
         type: object
+      age:
+        type: integer
+        minimum: 0
+        maximum: 120
       last_eaten:
         type: string
         format: date-time
@@ -483,14 +497,25 @@ definitions:
         - sold
     required:
     - name
+    - category_id
 
   pet_update:
     properties:
-      category:
-        $ref: "#/definitions/category"
+      category_id:
+        type: integer
+        x-related-info:
+          model: category
+          rest_resource_name: categories
+          field: id
+          label: name
       name:
         type: string
         example: doggie
+        minLength: 2
+      age:
+        type: integer
+        minimum: 0
+        maximum: 120
       last_eaten:
         type: string
         format: date-time

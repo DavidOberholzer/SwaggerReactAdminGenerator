@@ -33,31 +33,19 @@ import {{ title }}Filter from '../filters/{{ title }}Filter';
 {% endif %}
 
 {% if resource.methods.create %}
-const validationCreate{{ title }} = values => {
-    const errors = {};
-    {% for attribute in resource.methods.create.fields %}
-    {% if attribute.required %}
-    if (!values.{{ attribute.source }}) {
-        errors.{{ attribute.source }} = ["{{ attribute.source }} is required"];
-    }
-    {% endif %}
-    {% endfor %}
-    return errors;
-};
+{% for attribute in resource.methods.create.fields %}
+{% if attribute.required or attribute.length_values %}
+const validate{{ attribute.source|title }}Create = [{% if attribute.required %}required(),{% endif %}{% if attribute.length_values %}{% for function, value in attribute.length_values.items() %}{% if value %}{{ function }}({{ value }}),{% endif %}{% endfor %}{% endif %}];
+{% endif %}
+{% endfor %}
 
 {% endif %}
 {% if resource.methods.edit %}
-const validationEdit{{ title }} = values => {
-    const errors = {};
-    {% for attribute in resource.methods.edit.fields %}
-    {% if attribute.required %}
-    if (!values.{{ attribute.source }}) {
-        errors.{{ attribute.source }} = ["{{ attribute.source }} is required"];
-    }
-    {% endif %}
-    {% endfor %}
-    return errors;
-};
+{% for attribute in resource.methods.edit.fields %}
+{% if attribute.required or attribute.length_values %}
+const validate{{ attribute.source|title }}Edit = [{% if attribute.required %}required(),{% endif %}{% if attribute.length_values %}{% for function, value in attribute.length_values.items() %}{% if value %}{{ function }}({{ value }}),{% endif %}{% endfor %}{% endif %}];
+{% endif %}
+{% endfor %}
 
 {% endif %}
 {% for method, entries in resource.methods.items() %}
@@ -93,13 +81,18 @@ export const {{ title }}{{ component|title }} = props => (
             }
             medium={
         {% endif %}
-        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm validate={validation{{ component|title }}{{ title }}}{% if component == "edit" %} toolbar={<{{ title }}EditToolbar />}{% endif %}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
+        <{% if component == "list" %}Datagrid{% elif component == "show" %}SimpleShowLayout{% else %}SimpleForm{% if component == "edit" %} toolbar={<{{ title }}EditToolbar />}{% endif %}{% if component == "create" %} redirect="show"{% endif %}{% endif %}>
             {% for attribute in entries.fields %}
             {% if attribute.read_only and component == "create" %}{% else %}
             {% if attribute.related_component %}
             {% if "Field" in attribute.component %}
             { {% if permissions_store %}PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list'){% else %}permitted({{ attribute.permissions }}){% endif %} ? (
-                <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
+                <{{ attribute.component }}
+                    label="{{ attribute.label }}"
+                    source="{{ attribute.source }}"
+                    reference="{{ attribute.reference }}"{% if component == "list" and not attribute.sortable %}
+                    sortable={false}{% endif %}
+                    linkType="show">
                     <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
                 </{{ attribute.component }}>
             ) : (
@@ -107,13 +100,26 @@ export const {{ title }}{{ component|title }} = props => (
             )}
             {% else %}
             { {% if permissions_store %}PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list'){% else %}permitted({{ attribute.permissions }}){% endif %} && (
-                <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}"{% if "Field" in attribute.component %} linkType="show"{% else %} perPage={0}{% endif %} allowEmpty>
+                <{{ attribute.component }}
+                    label="{{ attribute.label }}"
+                    source="{{ attribute.source }}"
+                    reference="{{ attribute.reference }}"
+                    perPage={0}{% if not attribute.required %}
+                    allowEmpty{% endif %}>
                     <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.related_component }}{% endif %} {% if "Input" in attribute.related_component %}optionText={% else %}source={% endif %}"{{ attribute.option_text }}" />
                 </{{ attribute.component }}>
             )}
             {% endif %}
             {% else %}
-            <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %} source="{{ attribute.source }}"{% if component == "list" and not attribute.sortable %} sortable={false}{% endif %}{% if attribute.choices %} choices={choice{{ component|title }}{{ attribute.source|title }}}{% endif %}{% if attribute.type == "object" and "Input" in attribute.component %} format={value => value instanceof Object ? JSON.stringify(value) : value} parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %} addLabel{% endif %} />
+            <{% if attribute.read_only %}DisabledInput{% else %}{{ attribute.component }}{% endif %}
+                source="{{ attribute.source }}"{% if component == "list" and not attribute.sortable %}
+                sortable={false}{% endif %}{% if attribute.choices %}
+                choices={choice{{ component|title }}{{ attribute.source|title }}}{% endif %}{% if component == "create" or component == "edit" %}{% if attribute.required or attribute.length_values %}
+                validate={validate{{ attribute.source|title }}{% if component == "create" %}Create{% else %}Edit{% endif %}}{% endif %}{% endif %}{% if attribute.type == "object" and "Input" in attribute.component %}
+                format={value => value instanceof Object ? JSON.stringify(value) : value}
+                parse={value => { try { return JSON.parse(value); } catch (e) { return value; } }}{% endif %}{% if attribute.component == "ObjectField" %}
+                addLabel{% endif %}
+            />
             {% endif %}
             {% endif %}
             {% endfor %}
@@ -124,7 +130,7 @@ export const {{ title }}{{ component|title }} = props => (
                         {% for attribute in inline.fields %}
                         {% if attribute.related_component %}
                         { {% if permissions_store %}PermissionsStore.getResourcePermission('{{ attribute.reference }}', 'list'){% else %}permitted({{ entries.permissions }}){% endif %} ? (
-                            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty>
+                            <{{ attribute.component }} label="{{ attribute.label }}" source="{{ attribute.source }}" reference="{{ attribute.reference }}" sortable={false} {% if "Field" in attribute.component %}linkType="show" {% endif %}allowEmpty{% if attribute.required %}={false}{% endif %}>
                                 <{{ attribute.related_component }} source="{{ attribute.option_text }}" />
                             </{{ attribute.component }}>
                         ) : (
