@@ -9,6 +9,8 @@ The purpose of this tool is to generate all the CRUD, Filter and base elements o
 
 ## Installation
 
+This tool requires Python 3 or later.
+
 In your virtual environment, pip install the package.
 
 `pip install swagger-react-admin-generator`
