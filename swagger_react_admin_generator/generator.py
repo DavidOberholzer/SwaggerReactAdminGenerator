@@ -613,7 +613,16 @@ class Generator(object):
                     if not operation_id or not valid_operation or exclude:
                         continue
 
-                singular, op = operation_id.rsplit("_", 1)
+                try:
+                    singular, op = operation_id.rsplit("_", 1)
+                except ValueError:
+                    click.secho(f"Skipping malformed operation_id '{operation_id}'.", fg="red")
+                    click.secho("It needs to have the form '<singular_resource_name>_<operation>',"
+                                " where operation is one of: {}".format(
+                                    ', '.join(VALID_OPERATIONS.keys())
+                                ), fg="red")
+                    continue
+
                 plural = path[1:].split("/")[0]
                 details = VALID_OPERATIONS.get(op, None)
                 if details:
@@ -903,7 +912,8 @@ class Generator(object):
 @click.argument("specification_path", type=click.Path(dir_okay=False, exists=True))
 @click.option("--spec-format", type=click.Choice(SPEC_CHOICES))
 @click.option("--verbose/--not-verbose", default=False)
-@click.option("--output-dir", type=click.Path(file_okay=False, exists=True, writable=True))
+@click.option("--output-dir", type=click.Path(file_okay=False, exists=True, writable=True),
+              default=DEFAULT_OUTPUT_DIR)
 @click.option("--module-name", type=str, default=DEFAULT_MODULE,
               help="The name of the module where the generated code will be "
                    "used, e.g. myproject.some_application")
