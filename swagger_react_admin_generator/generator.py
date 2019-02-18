@@ -754,7 +754,7 @@ class Generator(object):
         """
         full_dir = f"{self.output_dir}/{_dir_name}"
         if _dir_name not in self._directories:
-            os.makedirs(full_dir)
+            os.makedirs(full_dir, exist_ok=True)
             self._directories.add(_dir_name)
         return full_dir
 
