@@ -2,5 +2,5 @@
 
 click==6.7
 inflect==0.2.5
-Jinja2==2.10
+Jinja2==2.10.1
 MarkupSafe==1.0
